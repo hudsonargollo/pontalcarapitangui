@@ -1,0 +1,35 @@
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import bckImage from "@/assets/bck.webp";
+
+const QRLanding = () => {
+  const navigate = useNavigate();
+
+  const handleViewMenu = () => {
+    navigate("/menu");
+  };
+
+  return (
+    <div 
+      className="min-h-screen h-screen flex flex-col justify-center py-8 px-4 bg-cover bg-center bg-no-repeat bg-[#4a1a4a] fixed inset-0"
+      style={{
+        backgroundImage: `url(${bckImage})`,
+      }}
+    >
+      {/* Bottom Section - Button */}
+      <div className="mt-auto pb-[78px] md:pb-[94px]">
+        <div className="max-w-lg mx-auto px-2 md:px-4">
+          <Button 
+            size="lg" 
+            onClick={handleViewMenu}
+            className="w-full bg-secondary hover:bg-secondary/90 text-foreground font-bold text-lg md:text-xl py-6 md:py-7 rounded-xl md:rounded-2xl shadow-xl transition-all hover:scale-105"
+          >
+            Ver Cardápio
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default QRLanding;

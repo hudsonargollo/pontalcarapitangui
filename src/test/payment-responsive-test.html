@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Page - Responsive Layout Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Custom gradient from the app */
+    .bg-gradient-ocean {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .shadow-soft {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .shadow-medium {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    .animate-pulse-badge {
+      animation: pulse-badge 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Device Selector -->
+  <div class="fixed top-0 left-0 right-0 bg-white border-b shadow-sm z-50 p-4">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-lg font-bold mb-3">📱 Payment Page Responsive Test</h2>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="setViewport(375, 667)" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+          iPhone SE (375x667)
+        </button>
+        <button onclick="setViewport(390, 844)" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+          iPhone 12/13 (390x844)
+        </button>
+        <button onclick="setViewport(360, 800)" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+          Galaxy S21 (360x800)
+        </button>
+        <button onclick="setViewport(768, 1024)" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+          Tablet (768x1024)
+        </button>
+        <button onclick="setViewport(1024, 768)" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm">
+          Desktop (1024x768)
+        </button>
+      </div>
+      <div id="viewport-info" class="mt-2 text-sm text-gray-600"></div>
+    </div>
+  </div>
+
+  <!-- Test Frame -->
+  <div class="pt-32 pb-8 px-4">
+    <div id="test-container" class="mx-auto bg-white shadow-lg" style="width: 375px; height: 667px; overflow-y: auto;">
+      <!-- Payment Page Mock -->
+      <div class="min-h-full bg-gray-50">
+        <!-- Header -->
+        <header class="bg-gradient-ocean text-white p-4 shadow-medium">
+          <div class="flex items-center gap-3">
+            <button class="text-white hover:bg-white/20 min-h-[44px] min-w-[44px] rounded flex items-center justify-center">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <div class="flex-1">
+              <h1 class="text-xl font-bold">Detalhes do pagamento PIX</h1>
+              <p class="text-sm text-white/90">
+                Use o código PIX abaixo para concluir o pagamento
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <main class="max-w-2xl mx-auto p-4 space-y-6">
+          <!-- Payment Status -->
+          <div class="bg-white p-4 rounded-lg shadow-soft">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold text-lg">Status do Pagamento</h2>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-600 text-white border-2 border-purple-400 shadow-lg animate-pulse-badge">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2"/>
+                </svg>
+                Aguardando
+              </span>
+            </div>
+            <div class="text-center">
+              <p class="text-gray-600 mb-2 text-sm">Tempo restante para pagamento:</p>
+              <p class="text-2xl font-bold text-purple-600">14:59</p>
+            </div>
+          </div>
+
+          <!-- Primary PIX Code Section -->
+          <div class="bg-white p-6 rounded-lg shadow-soft border-2 border-purple-600/20">
+            <h3 class="font-bold text-lg mb-3">Código PIX</h3>
+            
+            <!-- PIX Code Snippet -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-2">
+              <p class="text-base font-mono text-center text-gray-700 select-all">
+                0002012658...041234
+              </p>
+            </div>
+            
+            <!-- Helper Text -->
+            <p class="text-sm text-gray-600 text-center mb-4">
+              Clique em "Copiar Código PIX" para colar no app do seu banco
+            </p>
+            
+            <!-- Primary Copy Button -->
+            <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-6 text-lg rounded-lg min-h-[48px] flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-width="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke-width="2"/>
+              </svg>
+              Copiar Código PIX
+            </button>
+          </div>
+
+          <!-- Secondary QR Code Section -->
+          <div class="bg-white p-4 rounded-lg shadow-soft">
+            <h3 class="font-semibold text-base mb-2">Pagar com QR Code (opcional)</h3>
+            <p class="text-sm text-gray-600 mb-3">
+              Se preferir, aponte a câmera do app do seu banco para o QR Code
+            </p>
+            
+            <!-- Smaller QR Code -->
+            <div class="flex justify-center">
+              <div class="w-48 h-48 bg-gray-200 border rounded-lg flex items-center justify-center">
+                <svg class="w-32 h-32 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="bg-white p-4 rounded-lg shadow-soft">
+            <h3 class="font-bold text-lg mb-4">Resumo do Pedido</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span>Cliente:</span>
+                <span class="font-semibold">João Silva</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Telefone:</span>
+                <span class="font-semibold">(11) 99999-9999</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold border-t pt-2">
+                <span>Total:</span>
+                <span class="text-purple-600">R$ 45.00</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Checklist -->
+  <div class="max-w-4xl mx-auto px-4 pb-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <h3 class="text-xl font-bold mb-4">✅ Responsive Layout Checklist</h3>
+      
+      <div class="space-y-4">
+        <div class="border-l-4 border-blue-500 pl-4">
+          <h4 class="font-semibold mb-2">📱 iPhone SE (375x667)</h4>
+          <ul class="text-sm space-y-1 text-gray-700">
+            <li>☐ All content visible without horizontal scroll</li>
+            <li>☐ PIX code section is prominent and readable</li>
+            <li>☐ QR code is smaller but still scannable</li>
+            <li>☐ Buttons are easily tappable (44x44px minimum)</li>
+            <li>☐ Text is readable (14px minimum)</li>
+          </ul>
+        </div>
+
+        <div class="border-l-4 border-green-500 pl-4">
+          <h4 class="font-semibold mb-2">📱 iPhone 12/13 (390x844)</h4>
+          <ul class="text-sm space-y-1 text-gray-700">
+            <li>☐ Layout scales appropriately</li>
+            <li>☐ Spacing between sections is comfortable</li>
+            <li>☐ No excessive white space</li>
+            <li>☐ Smooth scrolling without layout shifts</li>
+          </ul>
+        </div>
+
+        <div class="border-l-4 border-purple-500 pl-4">
+          <h4 class="font-semibold mb-2">📱 Samsung Galaxy S21 (360x800)</h4>
+          <ul class="text-sm space-y-1 text-gray-700">
+            <li>☐ Content fits narrower viewport</li>
+            <li>☐ No text truncation or overflow</li>
+            <li>☐ Touch targets remain adequate</li>
+            <li>☐ Visual hierarchy is maintained</li>
+          </ul>
+        </div>
+
+        <div class="border-l-4 border-orange-500 pl-4">
+          <h4 class="font-semibold mb-2">📱 Small Tablet (768x1024)</h4>
+          <ul class="text-sm space-y-1 text-gray-700">
+            <li>☐ Content is centered with max-width</li>
+            <li>☐ Doesn't stretch too wide</li>
+            <li>☐ Maintains mobile-first layout</li>
+            <li>☐ Comfortable reading experience</li>
+          </ul>
+        </div>
+
+        <div class="border-l-4 border-gray-500 pl-4">
+          <h4 class="font-semibold mb-2">🖥️ General Checks</h4>
+          <ul class="text-sm space-y-1 text-gray-700">
+            <li>☐ Section order: Header → Status → PIX → QR → Summary</li>
+            <li>☐ PIX section is visually prominent</li>
+            <li>☐ QR section is visually de-emphasized</li>
+            <li>☐ Smooth scrolling without jumps</li>
+            <li>☐ All interactive elements are accessible</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function setViewport(width, height) {
+      const container = document.getElementById('test-container');
+      const info = document.getElementById('viewport-info');
+      
+      container.style.width = width + 'px';
+      container.style.height = height + 'px';
+      
+      info.textContent = `Current viewport: ${width}x${height}px`;
+      
+      // Scroll to top of test container
+      container.scrollTop = 0;
+    }
+    
+    // Set initial viewport info
+    setViewport(375, 667);
+  </script>
+</body>
+</html>

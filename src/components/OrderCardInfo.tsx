@@ -1,0 +1,129 @@
+import { getWaiterName } from "@/lib/waiterUtils";
+import { formatPhoneNumber } from "@/lib/phoneUtils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { User, Printer } from "lucide-react";
+import { usePrintOrder } from "@/hooks/usePrintOrder";
+import { OrderReceipt } from "@/components/printable/OrderReceipt";
+
+interface OrderCardInfoProps {
+  orderId: string;
+  orderNumber: number;
+  customerName: string;
+  customerPhone: string;
+  waiterId: string | null;
+  cashierId?: string | null;
+  createdByCashier?: boolean;
+  createdAt: string;
+  paymentConfirmedAt?: string | null;
+  readyAt?: string | null;
+  kitchenNotifiedAt?: string | null;
+}
+
+export function OrderCardInfo({
+  orderId,
+  orderNumber,
+  customerName,
+  customerPhone,
+  waiterId,
+  cashierId,
+  createdByCashier,
+  createdAt,
+  paymentConfirmedAt,
+  readyAt,
+  kitchenNotifiedAt,
+}: OrderCardInfoProps) {
+  const { 
+    printKitchenReceipt, 
+    printCustomerReceipt, 
+    isPrinting, 
+    currentOrderData, 
+    printRef, 
+    receiptType,
+    generateKitchenReceipt,
+    generateCustomerReceipt 
+  } = usePrintOrder();
+
+  const formatTimestamp = (timestamp: string | null | undefined) => {
+    if (!timestamp) return null;
+    return new Date(timestamp).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const handlePrintKitchen = () => {
+    printKitchenReceipt(orderId);
+  };
+
+  const handlePrintCustomer = () => {
+    printCustomerReceipt(orderId);
+  };
+
+  return (
+    <>
+      <div className="space-y-1">
+        {/* Customer Info */}
+        <div className="text-sm text-gray-700">
+          <span className="font-bold">Cliente:</span> {customerName}
+        </div>
+        <div className="text-sm text-gray-700">
+          <span className="font-bold">Telefone:</span> {formatPhoneNumber(customerPhone)}
+        </div>
+
+        {/* Waiter/Cashier Badge and Print Button */}
+        <div className="pt-1 flex items-center gap-2">
+          {waiterId && (
+            <Badge variant="secondary" className="text-xs bg-primary/10 text-primary/90 border-primary/20 h-5 px-2">
+              <User className="mr-1 h-3 w-3" />
+              {getWaiterName(waiterId)}
+            </Badge>
+          )}
+          {createdByCashier && !waiterId && (
+            <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 border-blue-200 h-5 px-2 font-bold">
+              🏪 CAIXA
+            </Badge>
+          )}
+          
+          {/* Print Buttons */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrintKitchen}
+            disabled={isPrinting}
+            className="h-5 px-2 text-xs"
+            title="Imprimir comanda da cozinha"
+          >
+            <Printer className="h-3 w-3 mr-1" />
+            {isPrinting ? 'Imprimindo...' : 'Cozinha'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrintCustomer}
+            disabled={isPrinting}
+            className="h-5 px-2 text-xs"
+            title="Imprimir comprovante do cliente"
+          >
+            <Printer className="h-3 w-3 mr-1" />
+            Cliente
+          </Button>
+        </div>
+      </div>
+
+      {/* Hidden OrderReceipt for printing */}
+      {currentOrderData && (
+        <div style={{ display: 'none' }}>
+          <OrderReceipt
+            ref={printRef}
+            plainText={receiptType === 'kitchen' ? generateKitchenReceipt(currentOrderData) : generateCustomerReceipt(currentOrderData)}
+            type={receiptType}
+          />
+        </div>
+      )}
+    </>
+  );
+}

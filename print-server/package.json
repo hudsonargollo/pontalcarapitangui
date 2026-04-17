@@ -1,0 +1,21 @@
+{
+  "name": "coco-loko-print-server",
+  "version": "1.0.0",
+  "description": "Local thermal printer server for Coco Loko order slips",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "install-service": "node install-service.js"
+  },
+  "keywords": ["thermal-printer", "pos", "receipt"],
+  "author": "Coco Loko",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "node-thermal-printer": "^4.4.5"
+  },
+  "devDependencies": {
+    "node-windows": "^1.0.0-beta.8"
+  }
+}
