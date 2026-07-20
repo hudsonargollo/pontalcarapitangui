@@ -1,4 +1,5 @@
 # Cloudflare Pages _redirects file
+
 # Static assets should be served directly
 /*.webp   200
 /*.png    200  
