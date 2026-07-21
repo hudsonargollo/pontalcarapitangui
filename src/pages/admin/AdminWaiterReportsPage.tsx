@@ -1,6 +1,6 @@
 import { AdminWaiterReports } from "@/components";
 import { useNavigate } from "react-router-dom";
-import { UniformHeader } from "@/components/UniformHeader";
+import AdminLayout from "@/components/AdminLayout";
 
 const AdminWaiterReportsPage = () => {
   const navigate = useNavigate();
@@ -15,19 +15,9 @@ const AdminWaiterReportsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100">
-      {/* Uniform Header */}
-      <UniformHeader
-        title="Garçons"
-      />
-
-      {/* Content */}
-      <div className="p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <AdminWaiterReports />
-        </div>
-      </div>
-    </div>
+    <AdminLayout>
+      <AdminWaiterReports />
+    </AdminLayout>
   );
 };
 

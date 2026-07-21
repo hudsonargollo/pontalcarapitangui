@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Loader2, Users, RefreshCw } from "lucide-react";
 import { z } from "zod";
-import { AppHeader, type HeaderAction } from "@/components/AppHeader";
 
 interface Waiter {
   id: string;
@@ -234,33 +234,11 @@ const AdminWaiters = () => {
     setIsDialogOpen(true);
   };
 
-  // Edit functionality (e.g., password reset) is complex and also requires a secure backend.
-  // We will skip the implementation for the edit dialog for now, focusing on the core requirement (Create, View, Delete).
-
-  const pageActions: HeaderAction[] = [
-    {
-      label: "Atualizar",
-      icon: RefreshCw,
-      onClick: fetchWaiters,
-    },
-    {
-      label: "Novo Garçom",
-      icon: Plus,
-      onClick: openCreateDialog,
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100">
-      <AppHeader 
-        pageName="Gestão de Garçons"
-        actions={pageActions}
-        showConnectionStatus={false}
-      />
-
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <AdminLayout>
+      <div className="space-y-6">
         {/* Page Title */}
-        <div className="mb-8">
+        <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Users className="w-8 h-8 text-primary" />
             Gestão de Garçons
@@ -430,7 +408,7 @@ const AdminWaiters = () => {
         </DialogContent>
       </Dialog>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

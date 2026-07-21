@@ -21,25 +21,20 @@ export async function fetchWaiterInfo(waiterId: string): Promise<WaiterInfo | nu
   }
 
   try {
-    // Query profiles table directly for waiter information
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, display_name')
-      .eq('id', waiterId)
-      .eq('role', 'waiter')
-      .single();
+    // Get user from auth to get waiter info from metadata
+    const { data: { user }, error } = await supabase.auth.admin.getUserById(waiterId);
 
-    if (error) {
+    if (error || !user) {
       console.error('Error fetching waiter info:', error);
       return null;
     }
 
-    if (data) {
+    if (user && user.user_metadata?.role === 'waiter') {
       const waiter: WaiterInfo = {
-        id: data.id,
-        full_name: data.full_name || data.email,
-        email: data.email,
-        display_name: data.display_name
+        id: user.id,
+        full_name: user.user_metadata?.full_name || user.email || 'Garçom',
+        email: user.email || '',
+        display_name: user.user_metadata?.display_name
       };
       
       // Cache the result
@@ -59,34 +54,16 @@ export async function fetchWaiterInfo(waiterId: string): Promise<WaiterInfo | nu
  */
 export async function fetchAllWaiters(): Promise<WaiterInfo[]> {
   try {
-    // Query profiles table directly for all waiters
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, display_name')
-      .eq('role', 'waiter')
-      .order('full_name');
-
-    if (error) {
-      // Silently handle RLS permission errors - not critical for cashier functionality
-      if (error.code !== 'PGRST301') {
-        console.warn('Unable to fetch waiters list:', error.message);
-      }
+    // Get current session to check if user is admin
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
       return [];
     }
 
-    const waiters: WaiterInfo[] = (data || []).map(w => ({
-      id: w.id,
-      full_name: w.full_name || w.email,
-      email: w.email,
-      display_name: w.display_name
-    }));
-    
-    // Cache all waiters
-    waiters.forEach((waiter: WaiterInfo) => {
-      waiterCache.set(waiter.id, waiter);
-    });
-
-    return waiters;
+    // For now, return empty array - waiters are managed through edge functions
+    // This function is optional for cashier functionality
+    return [];
   } catch (error) {
     // Silently handle errors - waiter list is optional for cashier
     return [];

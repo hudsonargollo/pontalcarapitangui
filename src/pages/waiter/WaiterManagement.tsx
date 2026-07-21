@@ -75,7 +75,8 @@ const WaiterManagement = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('list-waiters', {
+      const { data, error } = await supabase.functions.invoke('api/waiters/list-waiters', {
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
@@ -124,7 +125,7 @@ const WaiterManagement = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('create-waiter', {
+      const { data, error } = await supabase.functions.invoke('api/waiters/create-waiter', {
         body: { email, password, full_name, phone_number: phone_number || null },
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -188,7 +189,7 @@ const WaiterManagement = () => {
       }
 
       // Update profile via Edge Function (bypasses RLS recursion issues)
-      const { data, error } = await supabase.functions.invoke('update-waiter-profile', {
+      const { data, error } = await supabase.functions.invoke('api/waiters/update-waiter-profile', {
         body: { 
           waiterId: currentWaiter.id,
           email,
@@ -250,7 +251,7 @@ const WaiterManagement = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('send-password-reset', {
+      const { data, error } = await supabase.functions.invoke('api/waiters/send-password-reset', {
         body: { 
           waiterId: waiter.id,
           waiterEmail: waiter.email,
@@ -292,7 +293,7 @@ const WaiterManagement = () => {
 
       console.log('🔵 Calling delete-waiter function with token length:', session.access_token.length);
 
-      const { data, error } = await supabase.functions.invoke('delete-waiter', {
+      const { data, error } = await supabase.functions.invoke('api/waiters/delete-waiter', {
         body: { waiterId },
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -350,14 +351,14 @@ const WaiterManagement = () => {
             onClick={fetchWaiters}
             variant="outline"
             size="default"
-            className="bg-white w-full sm:w-auto"
+            className="bg-white w-full sm:w-auto border-2 border-accent rounded-none shadow-soft"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
           <Button
             onClick={openCreateDialog}
-            className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto"
+            className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider w-full sm:w-auto rounded-none shadow-soft"
             size="default"
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -366,9 +367,9 @@ const WaiterManagement = () => {
         </div>
 
         <div className="space-y-4 sm:space-y-6">
-            <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
+            <Card className="shadow-soft border-2 border-accent rounded-none bg-white/95 backdrop-blur-sm">
               <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl font-semibold text-gray-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                <CardTitle className="text-lg sm:text-xl font-display uppercase tracking-wider text-gray-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                   <div className="flex items-center">
                     <Users className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Equipe de Garçons</span>
@@ -527,9 +528,9 @@ const WaiterManagement = () => {
 
         {/* Create/Edit Waiter Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto border-2 border-accent rounded-none shadow-soft">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg font-display uppercase tracking-wider">
                 {isEditMode ? <Edit className="w-5 h-5 text-purple-600" /> : <Users className="w-5 h-5 text-purple-600" />}
                 {isEditMode ? 'Editar Garçom' : 'Adicionar Novo Garçom'}
               </DialogTitle>
@@ -537,18 +538,18 @@ const WaiterManagement = () => {
             <form onSubmit={isEditMode ? handleUpdateWaiter : handleCreateWaiter}>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name" className="text-sm">Nome Completo</Label>
+                  <Label htmlFor="full_name" className="text-sm font-display uppercase tracking-wider">Nome Completo</Label>
                   <Input
                     id="full_name"
                     placeholder="Digite o nome completo"
                     value={currentWaiter.full_name || ''}
                     onChange={(e) => setCurrentWaiter({ ...currentWaiter, full_name: e.target.value })}
                     required
-                    className="text-base"
+                    className="text-base border-2 border-accent rounded-none shadow-soft"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm">Email</Label>
+                  <Label htmlFor="email" className="text-sm font-display uppercase tracking-wider">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -556,12 +557,12 @@ const WaiterManagement = () => {
                     value={currentWaiter.email || ''}
                     onChange={(e) => setCurrentWaiter({ ...currentWaiter, email: e.target.value })}
                     required
-                    className="text-base"
+                    className="text-base border-2 border-accent rounded-none shadow-soft"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone_number" className="text-sm">
+                  <Label htmlFor="phone_number" className="text-sm font-display uppercase tracking-wider">
                     Telefone WhatsApp {isEditMode && '(opcional)'}
                   </Label>
                   <Input
@@ -570,9 +571,9 @@ const WaiterManagement = () => {
                     placeholder="5511999999999"
                     value={currentWaiter.phone_number || ''}
                     onChange={(e) => setCurrentWaiter({ ...currentWaiter, phone_number: e.target.value })}
-                    className="text-base"
+                    className="text-base border-2 border-accent rounded-none shadow-soft"
                   />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs font-body text-gray-500">
                     {isEditMode 
                       ? 'Necessário para enviar link de redefinição de senha via WhatsApp'
                       : 'Formato: código do país + DDD + número (ex: 5511999999999)'
@@ -582,7 +583,7 @@ const WaiterManagement = () => {
 
                 {!isEditMode && (
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm">Senha</Label>
+                    <Label htmlFor="password" className="text-sm font-display uppercase tracking-wider">Senha</Label>
                     <Input
                       id="password"
                       type="password"
@@ -590,7 +591,7 @@ const WaiterManagement = () => {
                       value={currentWaiter.password || ''}
                       onChange={(e) => setCurrentWaiter({ ...currentWaiter, password: e.target.value })}
                       required
-                      className="text-base"
+                      className="text-base border-2 border-accent rounded-none shadow-soft"
                     />
                   </div>
                 )}
@@ -601,14 +602,14 @@ const WaiterManagement = () => {
                   variant="outline" 
                   onClick={() => setIsDialogOpen(false)}
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto border-2 border-accent rounded-none shadow-soft"
                 >
                   Cancelar
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={isSubmitting} 
-                  className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
+                  className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider w-full sm:w-auto rounded-none shadow-soft"
                 >
                   {isSubmitting ? (
                     <>

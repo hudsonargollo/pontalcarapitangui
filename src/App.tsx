@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/lib/cartContext";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { queueManager } from "@/integrations/whatsapp/queue-manager";
 import LoadingFallback from "@/components/LoadingFallback";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -20,6 +21,7 @@ const OrderStatus = lazy(() => import("./pages/customer/OrderStatus"));
 // Lazy load admin pages
 const Admin = lazy(() => import("./pages/admin/Admin"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminWaiterReportsPage = lazy(() => import("./pages/admin/AdminWaiterReportsPage"));
 const Reports = lazy(() => import("./pages/admin/Reports"));
 const WhatsAppAdmin = lazy(() => import("./pages/admin/WhatsAppAdmin"));
@@ -37,7 +39,10 @@ const WaiterManagement = lazy(() => import("./pages/waiter/WaiterManagement"));
 const WaiterDiagnostic = lazy(() => import("./pages/waiter/WaiterDiagnostic"));
 
 // Lazy load public pages
-const Index = lazy(() => import("./pages/public/Index"));
+const Landing = lazy(() => import("./pages/public/Landing"));
+const LandingMenu = lazy(() => import("./pages/public/LandingMenu"));
+const Proposta = lazy(() => import("./pages/public/Proposta"));
+const ContractManagement = lazy(() => import("./pages/public/ContractManagement"));
 const Auth = lazy(() => import("./pages/public/Auth"));
 const NotFound = lazy(() => import("./pages/public/NotFound"));
 
@@ -68,17 +73,33 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
+      <LanguageProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={
               <Suspense fallback={<LoadingFallback />}>
-                <Index />
+                <Landing />
               </Suspense>
             } />
+          <Route path="/landing-menu" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LandingMenu />
+            </Suspense>
+          } />
+          <Route path="/proposta" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <Proposta />
+            </Suspense>
+          } />
+          <Route path="/contract-management" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <ContractManagement />
+            </Suspense>
+          } />
           <Route path="/menu" element={
             <Suspense fallback={<LoadingFallback />}>
               <Menu />
@@ -260,6 +281,16 @@ const App = () => {
             }
           />
           <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminSettings />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/waiter-management"
             element={
               <ProtectedRoute requiredRole="admin">
@@ -325,6 +356,7 @@ const App = () => {
       </BrowserRouter>
     </TooltipProvider>
     </CartProvider>
+    </LanguageProvider>
   </QueryClientProvider>
   );
 };

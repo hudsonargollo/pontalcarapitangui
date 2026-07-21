@@ -20,13 +20,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen } from 'lucide-react';
+import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { SortingDialog } from '@/components/SortingDialog';
 import { CategoryManagement } from '@/components/CategoryManagement';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
-import { UniformHeader } from '@/components/UniformHeader';
+import AdminLayout from '@/components/AdminLayout';
 
 interface MenuItem {
   id: string;
@@ -224,6 +224,39 @@ const AdminProducts = () => {
     }
   };
 
+  const handleDelete = async (itemId: string, itemName: string) => {
+    if (!window.confirm(`Tem certeza que deseja deletar "${itemName}"? Esta ação é irreversível.`)) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      console.log('🗑️ Deleting product:', itemId);
+
+      const { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) {
+        console.error('❌ Delete error:', error);
+        throw error;
+      }
+
+      console.log('✅ Product deleted successfully');
+      toast.success('✅ Produto deletado com sucesso!');
+      
+      // Reload data to reflect changes
+      await loadData();
+      
+    } catch (error: any) {
+      console.error('❌ Error deleting product:', error);
+      toast.error(`❌ Erro ao deletar produto: ${error.message || 'Erro desconhecido'}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!formData.name || !formData.price || !formData.category_id) {
       toast.error('Preencha todos os campos obrigatórios');
@@ -328,11 +361,14 @@ const AdminProducts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100">
-      {/* Uniform Header */}
-      <UniformHeader
-        title="Produtos"
-        actions={
+    <AdminLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-gray-900">Produtos</h1>
+            <p className="text-gray-600 mt-1">Gerenciar cardápio e categorias</p>
+          </div>
           <Button
             onClick={() => {
               setEditingItem(null);
@@ -346,29 +382,27 @@ const AdminProducts = () => {
               });
               setIsDialogOpen(true);
             }}
-            className="bg-white/15 hover:bg-white/25 text-white border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
-            size="sm"
+            className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider rounded-lg shadow-lg"
+            size="lg"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Novo Produto</span>
+            <Plus className="mr-2 h-5 w-5" />
+            Novo Produto
           </Button>
-        }
-      />
+        </div>
 
-      {/* Tabs for Products and Categories */}
-      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        {/* Tabs */}
         <Tabs defaultValue="products" className="w-full">
-          <TabsList className="inline-flex h-11 items-center justify-center rounded-xl bg-white/80 backdrop-blur-sm p-1 text-muted-foreground shadow-lg border border-primary/10 mb-6">
+          <TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm p-1 text-muted-foreground shadow-lg border-2 border-gray-200 mb-6">
             <TabsTrigger 
               value="products" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/50 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-primary/5 gap-2"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-display uppercase tracking-wider ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/50 data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-primary/5 gap-2"
             >
               <ShoppingBag className="w-4 h-4" />
               Produtos
             </TabsTrigger>
             <TabsTrigger 
               value="categories" 
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-6 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/50 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md hover:bg-primary/5 gap-2"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-display uppercase tracking-wider ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/50 data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-primary/5 gap-2"
             >
               <FolderOpen className="w-4 h-4" />
               Categorias
@@ -377,8 +411,8 @@ const AdminProducts = () => {
 
           <TabsContent value="products" className="space-y-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Produtos do Cardápio</h2>
-              <p className="text-gray-600">
+              <h2 className="text-2xl font-display uppercase tracking-wider text-gray-900 mb-2">Produtos do Cardápio</h2>
+              <p className="text-gray-600 font-body">
                 {menuItems.length} produtos cadastrados • Clique em "Editar" para modificar
               </p>
             </div>
@@ -392,13 +426,13 @@ const AdminProducts = () => {
           return (
             <div key={category.id} className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">{category.name}</h3>
+                <h3 className="text-xl font-display uppercase tracking-wider text-gray-800">{category.name}</h3>
                 {isAdmin && (
                   <Button
                     onClick={() => handleOpenSortingDialog(category)}
                     variant="outline"
                     size="sm"
-                    className="bg-white/80 hover:bg-white text-primary border-primary/20 hover:border-primary/30 transition-all duration-300"
+                    className="bg-white/80 hover:bg-white text-primary border-2 border-primary rounded-lg transition-all duration-300 shadow-lg"
                   >
                     <ArrowUpDown className="w-4 h-4 mr-2" />
                     Organizar Ordem no Menu
@@ -408,10 +442,10 @@ const AdminProducts = () => {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {categoryItems.map((item) => (
-                  <Card key={item.id} className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-0 bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm overflow-hidden">
+                  <Card key={item.id} className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 border-gray-200 rounded-xl bg-white/95 backdrop-blur-sm overflow-hidden shadow-lg">
                     <div className="p-4 sm:p-6">
                       {/* Image */}
-                      <div className="w-full h-32 sm:h-40 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 mb-4 relative">
+                      <div className="w-full h-32 sm:h-40 rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 mb-4 relative">
                         {item.image_url ? (
                           <img
                             src={item.image_url}
@@ -464,15 +498,27 @@ const AdminProducts = () => {
                         )}
                       </div>
 
-                      {/* Edit Button */}
-                      <Button
-                        onClick={() => handleEdit(item)}
-                        className="w-full mt-4 bg-gradient-to-r from-primary/50 to-blue-600 hover:from-primary hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                        size="sm"
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar Produto
-                      </Button>
+                      {/* Buttons */}
+                      <div className="space-y-2 mt-4">
+                        <Button
+                          onClick={() => handleEdit(item)}
+                          className="w-full bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider shadow-lg hover:shadow-xl rounded-lg transition-all"
+                          size="sm"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(item.id, item.name)}
+                          variant="destructive"
+                          className="w-full shadow-lg hover:shadow-xl rounded-lg transition-all"
+                          size="sm"
+                          disabled={saving}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Deletar
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}
@@ -483,7 +529,7 @@ const AdminProducts = () => {
 
         {menuItems.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
               <ShoppingBag className="w-12 h-12 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Nenhum produto cadastrado</h3>
@@ -501,7 +547,7 @@ const AdminProducts = () => {
                 });
                 setIsDialogOpen(true);
               }}
-              className="bg-gradient-to-r from-primary/50 to-blue-600 hover:from-primary hover:to-blue-700"
+              className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider rounded-lg shadow-lg"
             >
               <Plus className="mr-2 h-4 w-4" />
               Criar Primeiro Produto
@@ -521,7 +567,7 @@ const AdminProducts = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl">
           <DialogHeader>
             <DialogTitle>
               {editingItem ? 'Editar Produto' : 'Novo Produto'}
@@ -653,7 +699,7 @@ const AdminProducts = () => {
           onSave={handleSortingSave}
         />
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

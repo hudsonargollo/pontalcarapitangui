@@ -31,6 +31,10 @@ const Payment = () => {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   
+  useEffect(() => {
+    document.title = "Pagamento — PONTAL Carapitangui";
+  }, []);
+  
   const [order, setOrder] = useState<Order | null>(null);
   const [paymentData, setPaymentData] = useState<MercadoPagoPaymentResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -373,22 +377,22 @@ const Payment = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary/90 to-accent/90 text-white shadow-2xl sticky top-0 z-10">
+      <div className="bg-gradient-ocean text-white shadow-2xl sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20 transition-all"
+              className="text-white hover:bg-white/20 transition-all rounded-lg"
               onClick={handleBack}
-              aria-label="Voltar"
+              aria-label="Voltar ao Status do Pedido"
             >
               <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold">Pagamento</h1>
+              <h1 className="text-xl sm:text-2xl font-display font-bold uppercase tracking-wider">Pagamento</h1>
               {order && (
-                <p className="text-white/90 text-sm mt-0.5">
+                <p className="text-white/90 text-sm mt-0.5 font-body">
                   Pedido #{order.order_number} • R$ {order.total_amount.toFixed(2)}
                 </p>
               )}
@@ -399,8 +403,8 @@ const Payment = () => {
 
       <main className="max-w-2xl mx-auto p-4 space-y-6" role="main">
         {/* Payment Method Selector (Task 7.2) */}
-        <Card className="p-4 shadow-soft">
-          <h2 className="font-bold text-lg mb-3">Método de Pagamento</h2>
+        <Card className="p-4 shadow-soft border-2 border-accent rounded-xl">
+          <h2 className="font-display font-bold text-lg mb-3 uppercase tracking-wider text-primary">Método de Pagamento</h2>
           <PaymentMethodSelector
             selectedMethod={selectedPaymentMethod}
             onMethodChange={handlePaymentMethodChange}
@@ -409,9 +413,9 @@ const Payment = () => {
         </Card>
 
         {/* Payment Status */}
-        <Card className="p-4 shadow-soft" role="region" aria-label="Status do pagamento">
+        <Card className="p-4 shadow-soft border-2 border-accent rounded-xl" role="region" aria-label="Status do pagamento">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-lg">Status do Pagamento</h2>
+            <h2 className="font-display font-bold text-lg uppercase tracking-wider text-primary">Status do Pagamento</h2>
             {getStatusBadge()}
           </div>
           
@@ -438,13 +442,13 @@ const Payment = () => {
           )}
 
           {paymentStatus === 'approved' && (
-            <div className="text-center text-green-600" role="status" aria-live="polite">
+            <div className="text-center text-secondary" role="status" aria-live="polite">
               <CheckCircle className="w-16 h-16 mx-auto mb-2" aria-hidden="true" />
-              <p className="font-semibold text-base">Pagamento aprovado!</p>
-              <p className="text-sm text-muted-foreground mb-4">Seu pedido foi confirmado!</p>
+              <p className="font-display font-semibold text-base uppercase tracking-wider">Pagamento aprovado!</p>
+              <p className="text-sm text-accent mb-4 font-body">Seu pedido foi confirmado!</p>
               <Button 
                 onClick={() => navigate(`/order-status/${orderId}`)}
-                className="w-full min-h-[44px]"
+                className="w-full min-h-[44px] bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white font-display uppercase tracking-wider rounded-xl"
                 aria-label="Ver status do pedido"
               >
                 Ver Status do Pedido
@@ -540,25 +544,25 @@ const Payment = () => {
         {selectedPaymentMethod === 'pix' && paymentStatus === 'pending' && paymentData && (
           <>
             {/* Primary PIX Code Section */}
-            <Card className="p-6 shadow-soft border-2 border-primary/20">
-              <h3 className="font-bold text-lg mb-3">Código PIX</h3>
+            <Card className="p-6 shadow-soft border-2 border-secondary rounded-xl">
+              <h3 className="font-display font-bold text-lg mb-3 uppercase tracking-wider text-primary">Código PIX</h3>
               
               {/* PIX Code Snippet */}
-              <div className="bg-gray-50 p-4 rounded-lg mb-2">
-                <p className="text-base font-mono text-center text-gray-700 select-all">
+              <div className="bg-background p-4 rounded-lg mb-2 border border-accent">
+                <p className="text-base font-mono text-center text-foreground select-all font-body">
                   {formatPixSnippet(paymentData.pixCopyPaste)}
                 </p>
               </div>
               
               {/* Helper Text */}
-              <p className="text-sm text-muted-foreground text-center mb-4">
+              <p className="text-sm text-accent text-center mb-4 font-body">
                 Clique em "Copiar Código PIX" para colar no app do seu banco
               </p>
               
               {/* Primary Copy Button */}
               <Button 
                 onClick={copyPixCode} 
-                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 text-lg min-h-[48px]"
+                className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white font-display uppercase tracking-wider py-6 text-lg min-h-[48px] rounded-xl"
                 size="lg"
                 aria-label="Copiar código PIX para área de transferência"
               >
@@ -568,9 +572,9 @@ const Payment = () => {
             </Card>
 
             {/* Secondary QR Code Section */}
-            <Card className="p-4 shadow-soft">
-              <h3 className="font-semibold text-base mb-2">Pagar com QR Code (opcional)</h3>
-              <p className="text-sm text-muted-foreground mb-3">
+            <Card className="p-4 shadow-soft border-2 border-accent rounded-xl">
+              <h3 className="font-display font-semibold text-base mb-2 uppercase tracking-wider text-primary">Pagar com QR Code (opcional)</h3>
+              <p className="text-sm text-accent mb-3 font-body">
                 Se preferir, aponte a câmera do app do seu banco para o QR Code
               </p>
               
@@ -580,18 +584,18 @@ const Payment = () => {
                   <img
                     src={`data:image/png;base64,${paymentData.qrCodeBase64}`}
                     alt="QR Code para pagamento PIX - Escaneie com o aplicativo do seu banco"
-                    className="w-48 h-48 border rounded-lg"
+                    className="w-48 h-48 border-2 border-accent rounded-lg"
                     width="192"
                     height="192"
                   />
                 </div>
               ) : (
                 <div 
-                  className="w-48 h-48 bg-gray-100 border rounded-lg mx-auto flex items-center justify-center"
+                  className="w-48 h-48 bg-background border-2 border-accent rounded-lg mx-auto flex items-center justify-center"
                   role="alert"
                   aria-live="polite"
                 >
-                  <p className="text-muted-foreground text-sm">QR Code não disponível</p>
+                  <p className="text-accent text-sm font-body">QR Code não disponível</p>
                 </div>
               )}
             </Card>
@@ -601,8 +605,8 @@ const Payment = () => {
 
         {/* Credit Card Payment - Conditional rendering for credit card method (Task 7.4) */}
         {selectedPaymentMethod === 'credit_card' && order && (
-          <Card className="p-6 shadow-soft border-2 border-primary/20">
-            <h3 className="font-bold text-lg mb-4">Pagamento com Cartão de Crédito</h3>
+          <Card className="p-6 shadow-soft border-2 border-secondary rounded-xl">
+            <h3 className="font-display font-bold text-lg mb-4 uppercase tracking-wider text-primary">Pagamento com Cartão de Crédito</h3>
             <CreditCardPayment
               orderId={order.id}
               amount={order.total_amount}
@@ -617,20 +621,20 @@ const Payment = () => {
         )}
 
         {/* Order Summary */}
-        <Card className="p-4 shadow-soft" role="region" aria-label="Resumo do pedido">
-          <h3 className="font-bold text-lg mb-4">Resumo do Pedido</h3>
-          <div className="space-y-2">
+        <Card className="p-4 shadow-soft border-2 border-accent rounded-xl" role="region" aria-label="Resumo do pedido">
+          <h3 className="font-display font-bold text-lg mb-4 uppercase tracking-wider text-primary">Resumo do Pedido</h3>
+          <div className="space-y-2 font-body">
             <div className="flex justify-between">
-              <span>Cliente:</span>
-              <span className="font-semibold">{order.customer_name}</span>
+              <span className="text-foreground">Cliente:</span>
+              <span className="font-semibold text-foreground">{order.customer_name}</span>
             </div>
             <div className="flex justify-between">
-              <span>Telefone:</span>
-              <span className="font-semibold">{formatPhoneNumber(order.customer_phone)}</span>
+              <span className="text-foreground">Telefone:</span>
+              <span className="font-semibold text-foreground">{formatPhoneNumber(order.customer_phone)}</span>
             </div>
-            <div className="flex justify-between text-lg font-bold border-t pt-2">
-              <span>Total:</span>
-              <span className="text-primary">R$ {order.total_amount.toFixed(2)}</span>
+            <div className="flex justify-between text-lg font-bold border-t border-accent pt-2">
+              <span className="text-foreground">Total:</span>
+              <span className="text-secondary">R$ {order.total_amount.toFixed(2)}</span>
             </div>
           </div>
         </Card>

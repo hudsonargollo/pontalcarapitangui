@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -131,13 +132,32 @@ export default function WhatsAppAdmin() {
 
   const loadStats = async () => {
     try {
-      // Mock stats for now - replace with actual API call
+      // Fetch real WhatsApp notification stats from Supabase
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Get all WhatsApp notifications
+      const { data: notifications, error } = await supabase
+        .from('whatsapp_notifications')
+        .select('status, created_at')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching WhatsApp stats:', error);
+        return;
+      }
+
+      const totalSent = notifications?.length || 0;
+      const totalFailed = notifications?.filter(n => n.status === 'failed').length || 0;
+      const totalPending = notifications?.filter(n => n.status === 'pending').length || 0;
+      const deliveryRate = totalSent > 0 ? ((totalSent - totalFailed) / totalSent) * 100 : 0;
+      const lastActivity = notifications?.[0]?.created_at || new Date().toISOString();
+
       setStats({
-        totalSent: 127,
-        totalFailed: 3,
-        totalPending: 0,
-        deliveryRate: 97.7,
-        lastActivity: new Date().toISOString()
+        totalSent,
+        totalFailed,
+        totalPending,
+        deliveryRate: Math.round(deliveryRate * 10) / 10,
+        lastActivity
       });
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -413,22 +433,16 @@ export default function WhatsAppAdmin() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-      {/* Uniform Header */}
-      <UniformHeader
-        title="WhatsApp"
-      />
-
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
+    <AdminLayout>
+      <div className="space-y-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="overview">
+          <TabsList className="grid w-full grid-cols-2 mb-4 bg-white shadow-soft rounded-lg border-2 border-accent">
+            <TabsTrigger value="overview" className="font-display uppercase tracking-wider rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-white shadow-soft">
               <Activity className="h-4 w-4 mr-2" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="logs">
+            <TabsTrigger value="logs" className="font-display uppercase tracking-wider rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-white shadow-soft">
               <FileText className="h-4 w-4 mr-2" />
               Log de Erros
             </TabsTrigger>
@@ -436,7 +450,7 @@ export default function WhatsAppAdmin() {
 
           <TabsContent value="overview" className="space-y-4">
         {/* Connection Status Card */}
-        <Card className={connectionStatus === 'connected' ? 'border-green-200 bg-white' : 'border-orange-200 bg-white'}>
+        <Card className={connectionStatus === 'connected' ? 'border-2 border-accent bg-white shadow-soft rounded-xl' : 'border-2 border-accent bg-white shadow-soft rounded-xl'}>
           <CardHeader className="p-5 sm:p-6 space-y-4">
             <div className="flex items-start gap-4">
               <div className={`p-3 rounded-2xl flex-shrink-0 ${connectionStatus === 'connected' ? 'bg-green-100' : 'bg-orange-100'}`}>
@@ -547,7 +561,7 @@ export default function WhatsAppAdmin() {
         </div>
 
         {/* Test Connection Card */}
-        <Card>
+        <Card className="border-2 border-accent rounded-xl shadow-soft">
           <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
             <CardTitle className="text-base sm:text-lg">
               Testar Notificações
@@ -685,6 +699,6 @@ export default function WhatsAppAdmin() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

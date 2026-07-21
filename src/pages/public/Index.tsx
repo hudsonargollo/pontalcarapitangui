@@ -5,7 +5,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QrCode, Search, Lock } from "lucide-react";
-import logo from "/logo.jpg";
+import logo from "/logo-pontal.webp";
 
 const Index = () => {
   const navigate = useNavigate();

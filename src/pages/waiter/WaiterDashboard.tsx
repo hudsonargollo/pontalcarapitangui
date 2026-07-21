@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UniformHeader } from "@/components";
+import AdminLayout from "@/components/AdminLayout";
 import { GeneratePaymentDialog } from "@/components/GeneratePaymentDialog";
 import { CommissionToggle } from "@/components/CommissionToggle";
 import { MobileOrderCard } from "@/components/MobileOrderCard";
@@ -448,18 +449,15 @@ const WaiterDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-acai">
+    <AdminLayout>
       {/* Uniform Header */}
       <UniformHeader
         title="Garçom"
         onLogout={handleLogout}
       />
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-
-        {/* Side-by-side layout for Place Order and Total Sales on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Side-by-side layout for Place Order and Total Sales on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Place Order Card */}
           <div data-testid="new-order-section">
             <Card className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 text-white shadow-2xl border-0 overflow-hidden relative h-full hover:shadow-3xl transition-all duration-300 hover:-translate-y-1">
@@ -772,7 +770,6 @@ const WaiterDashboard = () => {
             )}
           </CardContent>
         </Card>
-      </div>
 
       {/* Payment Generator Modal (PIX or Credit Card) */}
       {selectedOrder && (
@@ -807,7 +804,7 @@ const WaiterDashboard = () => {
           onSuccess={handleAddItemsSuccess}
         />
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

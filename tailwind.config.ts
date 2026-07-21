@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["'Big Shoulders Display'", "'Archivo Narrow'", "sans-serif"],
+        body: ["'Outfit'", "'Satoshi'", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -55,7 +59,7 @@ export default {
       backgroundImage: {
         'gradient-ocean': 'var(--gradient-ocean)',
         'gradient-sunset': 'var(--gradient-sunset)',
-        'gradient-acai': 'var(--gradient-acai)',
+        'gradient-sand': 'var(--gradient-sand)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
@@ -64,8 +68,8 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) + 2px)",
+        sm: "calc(var(--radius) + 4px)",
       },
       keyframes: {
         "accordion-down": {

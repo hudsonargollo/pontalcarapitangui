@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QrCode, MapPin } from "lucide-react";
 import { validateTableId, formatTableDisplay } from "@/lib/tableContext";
-import logo from "/logo.jpg";
+import logo from "/logo-pontal.webp";
 import bckMImage from "@/assets/bck-m.webp";
 
 const Welcome = () => {
@@ -21,46 +21,43 @@ const Welcome = () => {
   };
 
   return (
-    <div 
-      className="h-screen flex flex-col items-center justify-center px-4 bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: `linear-gradient(rgba(107, 142, 127, 0.7), rgba(160, 120, 80, 0.7)), url(${bckMImage})`,
-      }}
-    >
+    <div className="h-screen flex flex-col items-center justify-center px-4 bg-background">
       <div className="max-w-md w-full text-center">
-        {/* Logo */}
-        <img 
-          src={logo} 
-          alt="PONTAL Carapitangui" 
-          className="h-32 sm:h-40 mx-auto mb-6 drop-shadow-2xl rounded-lg"
-        />
+        {/* Logo in Circle */}
+        <div className="w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-8 rounded-full border-4 border-secondary bg-white shadow-strong flex items-center justify-center">
+          <img 
+            src={logo} 
+            alt="PONTAL Carapitangui" 
+            className="w-32 sm:w-40 h-auto"
+          />
+        </div>
         
         {/* Welcome Text */}
-        <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+        <h1 className="text-4xl sm:text-5xl font-display font-bold text-primary mb-3 drop-shadow-lg tracking-wider uppercase">
           Bem-vindo!
         </h1>
-        <p className="text-xl sm:text-2xl text-white/95 mb-2 drop-shadow-md">
+        <p className="text-xl sm:text-2xl text-foreground mb-2 drop-shadow-md font-body">
           PONTAL Carapitangui - Praia Bar
         </p>
         
         {/* Table Info */}
-        <div className="flex items-center justify-center gap-2 mb-8 text-white/90">
+        <div className="flex items-center justify-center gap-2 mb-8 text-foreground">
           <MapPin className="h-5 w-5" />
-          <span className="text-lg font-semibold">{formatTableDisplay(tableId)}</span>
+          <span className="text-lg font-semibold font-body">{formatTableDisplay(tableId)}</span>
         </div>
         
-        {/* Main CTA Button with Pulse */}
+        {/* Main CTA Button */}
         <Button 
           size="lg" 
           onClick={handleStartOrdering}
-          className="w-full text-xl py-7 bg-white text-primary hover:bg-white/90 shadow-2xl animate-pulse hover:animate-none transition-all transform hover:scale-105"
+          className="w-full text-xl py-7 bg-secondary text-white hover:bg-secondary/90 shadow-2xl transition-all transform hover:scale-105 font-display uppercase tracking-wider rounded-none"
         >
           <QrCode className="mr-2 h-6 w-6" />
           Começar Pedido
         </Button>
         
         {/* Quick Info */}
-        <div className="mt-8 bg-white/10 backdrop-blur-sm rounded-lg p-4 text-white/90 text-sm">
+        <div className="mt-8 bg-primary/5 backdrop-blur-sm p-4 text-foreground text-sm font-body border-2 border-accent rounded-none">
           <p className="mb-2">✨ Peça pelo celular</p>
           <p className="mb-2">💳 Pague com PIX</p>
           <p>📱 Receba notificações no WhatsApp</p>

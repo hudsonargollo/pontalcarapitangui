@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import AdminLayout from "@/components/AdminLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,7 +11,6 @@ import { DollarSign, ShoppingCart, TrendingUp, Calendar as CalendarIcon, Downloa
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { UniformHeader } from "@/components/UniformHeader";
 import { fetchAllWaiters, type WaiterInfo } from "@/lib/waiterUtils";
 import { usePrintReport } from "@/hooks/usePrintReport";
 import { ReportPrintView } from "@/components/printable/ReportPrintView";
@@ -156,22 +156,20 @@ const Reports = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100">
-      <UniformHeader title="Relatórios" />
-
-      <div className="max-w-7xl mx-auto p-4 space-y-4">
+    <AdminLayout>
+      <div className="space-y-4">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-12 bg-white shadow-lg rounded-xl p-1">
+          <TabsList className="grid w-full grid-cols-2 h-12 bg-white shadow-soft rounded-none border-2 border-accent p-1">
             <TabsTrigger 
               value="geral" 
-              className="text-base font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg"
+              className="text-base font-display uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-white rounded-none shadow-soft"
             >
               Geral
             </TabsTrigger>
             <TabsTrigger 
               value="individual" 
-              className="text-base font-semibold data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-indigo-600 data-[state=active]:text-white rounded-lg"
+              className="text-base font-display uppercase tracking-wider data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-accent data-[state=active]:text-white rounded-none shadow-soft"
             >
               Por Garçom
             </TabsTrigger>
@@ -179,7 +177,7 @@ const Reports = () => {
 
           <TabsContent value="geral" className="space-y-4 mt-4">
             {/* Date Range & Export */}
-            <Card className="p-4">
+            <Card className="p-4 border-2 border-accent rounded-none shadow-soft">
               <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
                 <div className="text-sm font-medium">
                   {format(dateRange.from, "dd/MM/yyyy")} - {format(dateRange.to, "dd/MM/yyyy")}
@@ -225,49 +223,49 @@ const Reports = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg">
+              <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-none flex items-center justify-center shadow-soft">
                     <ShoppingCart className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600">Pedidos</p>
+                    <p className="text-xs font-body text-gray-600">Pedidos</p>
                     <p className="text-2xl font-bold">{stats.totalOrders}</p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 bg-gradient-to-br from-white to-green-50 border-0 shadow-lg">
+              <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-none flex items-center justify-center shadow-soft">
                     <DollarSign className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600">Receita</p>
+                    <p className="text-xs font-body text-gray-600">Receita</p>
                     <p className="text-xl font-bold text-green-600">R$ {stats.totalRevenue.toFixed(0)}</p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 bg-gradient-to-br from-white to-purple-50 border-0 shadow-lg">
+              <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/90 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/90 rounded-none flex items-center justify-center shadow-soft">
                     <TrendingUp className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600">Ticket Médio</p>
+                    <p className="text-xs font-body text-gray-600">Ticket Médio</p>
                     <p className="text-xl font-bold text-primary">R$ {stats.averageOrderValue.toFixed(0)}</p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="p-4 bg-gradient-to-br from-white to-indigo-50 border-0 shadow-lg">
+              <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-accent/90 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/90 rounded-none flex items-center justify-center shadow-soft">
                     <span className="text-white font-bold text-lg">✓</span>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-600">Concluídos</p>
+                    <p className="text-xs font-body text-gray-600">Concluídos</p>
                     <p className="text-2xl font-bold">{stats.completedOrders}</p>
                   </div>
                 </div>
@@ -275,7 +273,7 @@ const Reports = () => {
             </div>
 
             {/* Daily Table */}
-            <Card className="p-4">
+            <Card className="p-4 border-2 border-accent rounded-none shadow-soft">
               <h3 className="font-bold text-lg mb-3">Vendas Diárias</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -319,7 +317,7 @@ const Reports = () => {
 
           <TabsContent value="individual" className="space-y-4 mt-4">
             {/* Waiter Selection */}
-            <Card className="p-4">
+            <Card className="p-4 border-2 border-accent rounded-none shadow-soft">
               <div className="flex flex-col sm:flex-row gap-3 items-center">
                 <div className="flex-1 w-full">
                   <Select value={selectedWaiterId} onValueChange={setSelectedWaiterId}>
@@ -378,49 +376,49 @@ const Reports = () => {
               <>
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  <Card className="p-4 bg-gradient-to-br from-white to-blue-50 border-0 shadow-lg">
+                  <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-none flex items-center justify-center shadow-soft">
                         <ShoppingCart className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Pedidos</p>
+                        <p className="text-xs font-body text-gray-600">Pedidos</p>
                         <p className="text-2xl font-bold">{stats.totalOrders}</p>
                       </div>
                     </div>
                   </Card>
 
-                  <Card className="p-4 bg-gradient-to-br from-white to-green-50 border-0 shadow-lg">
+                  <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-none flex items-center justify-center shadow-soft">
                         <DollarSign className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Receita</p>
+                        <p className="text-xs font-body text-gray-600">Receita</p>
                         <p className="text-xl font-bold text-green-600">R$ {stats.totalRevenue.toFixed(0)}</p>
                       </div>
                     </div>
                   </Card>
 
-                  <Card className="p-4 bg-gradient-to-br from-white to-purple-50 border-0 shadow-lg">
+                  <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/90 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/90 rounded-none flex items-center justify-center shadow-soft">
                         <TrendingUp className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Ticket Médio</p>
+                        <p className="text-xs font-body text-gray-600">Ticket Médio</p>
                         <p className="text-xl font-bold text-primary">R$ {stats.averageOrderValue.toFixed(0)}</p>
                       </div>
                     </div>
                   </Card>
 
-                  <Card className="p-4 bg-gradient-to-br from-white to-indigo-50 border-0 shadow-lg">
+                  <Card className="p-4 bg-white border-2 border-accent rounded-none shadow-soft">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-accent/90 rounded-xl flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-accent to-accent/90 rounded-none flex items-center justify-center shadow-soft">
                         <span className="text-white font-bold text-lg">✓</span>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-600">Concluídos</p>
+                        <p className="text-xs font-body text-gray-600">Concluídos</p>
                         <p className="text-2xl font-bold">{stats.completedOrders}</p>
                       </div>
                     </div>
@@ -428,7 +426,7 @@ const Reports = () => {
                 </div>
 
                 {/* Daily Table */}
-                <Card className="p-4">
+                <Card className="p-4 border-2 border-accent rounded-none shadow-soft">
                   <h3 className="font-bold text-lg mb-3">Vendas Diárias</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -470,7 +468,7 @@ const Reports = () => {
                 </Card>
               </>
             ) : (
-              <Card className="p-12 text-center">
+              <Card className="p-12 text-center border-2 border-accent rounded-none shadow-soft">
                 <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">Selecione um garçom para ver o relatório</p>
               </Card>
@@ -493,7 +491,7 @@ const Reports = () => {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

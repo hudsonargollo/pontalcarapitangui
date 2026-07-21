@@ -79,15 +79,15 @@ export default function WaiterSetup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-blue-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl">
+      <Card className="w-full max-w-md shadow-soft border-2 border-accent rounded-none">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/50 to-blue-500 rounded-full flex items-center justify-center mb-2">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/50 to-blue-500 rounded-none flex items-center justify-center mb-2">
             <User className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-display uppercase tracking-wider text-gray-900">
             Configure Seu Nome de Exibição
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-base font-body">
             Escolha um nome único que será usado para identificar você nos pedidos e relatórios
           </CardDescription>
         </CardHeader>
@@ -95,7 +95,7 @@ export default function WaiterSetup() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="displayName" className="text-sm font-medium">
+              <Label htmlFor="displayName" className="text-sm font-display uppercase tracking-wider">
                 Nome de Exibição
               </Label>
               <Input
@@ -108,11 +108,11 @@ export default function WaiterSetup() {
                   setError(null);
                 }}
                 disabled={loading}
-                className="text-base"
+                className="text-base border-2 border-accent rounded-none shadow-soft"
                 autoFocus
                 maxLength={50}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs font-body text-gray-500">
                 {displayName.length}/50 caracteres
               </p>
             </div>
@@ -123,12 +123,12 @@ export default function WaiterSetup() {
               </Alert>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium text-blue-900 flex items-center gap-2">
+            <div className="bg-blue-50 border-2 border-accent rounded-none p-4 space-y-2 shadow-soft">
+              <p className="text-sm font-display uppercase tracking-wider text-blue-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
                 Dicas:
               </p>
-              <ul className="text-sm text-blue-800 space-y-1 ml-6 list-disc">
+              <ul className="text-sm font-body text-blue-800 space-y-1 ml-6 list-disc">
                 <li>Use seu apelido ou primeiro nome</li>
                 <li>Deve ser único (não pode repetir)</li>
                 <li>Será visível para toda a equipe</li>
@@ -138,7 +138,7 @@ export default function WaiterSetup() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 font-display uppercase tracking-wider rounded-none shadow-soft"
               disabled={loading || !displayName.trim()}
               size="lg"
             >

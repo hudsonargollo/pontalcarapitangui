@@ -16,17 +16,9 @@ export const useAdminCheck = () => {
           return;
         }
 
-        // Check via RPC function
-        const { data, error } = await supabase.rpc('get_user_role', {
-          user_id: user.id
-        });
-
-        if (error) {
-          console.error('Error checking admin status:', error);
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(data === 'admin');
-        }
+        // Check admin status from user metadata
+        const userRole = user.user_metadata?.role;
+        setIsAdmin(userRole === 'admin');
       } catch (error) {
         console.error('Error in admin check:', error);
         setIsAdmin(false);

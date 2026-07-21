@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ConnectionStatusBadge } from "@/components/ConnectionStatusBadge";
 import { useConnectionMonitor } from "@/components/ConnectionMonitor";
-import logo from "/logo.jpg";
+import logo from "/logo-pontal.webp";
 
 export interface HeaderAction {
   label: string;

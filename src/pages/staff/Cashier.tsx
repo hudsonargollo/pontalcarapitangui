@@ -5,7 +5,6 @@ import { useCashierOrders } from "@/hooks/useRealtimeOrders";
 import { useNotificationHistory } from "@/hooks/useNotificationHistory";
 import { useWhatsAppErrors } from "@/hooks/useWhatsAppErrors";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
-import { useStoreStatus } from "@/hooks/useStoreStatus";
 import { RealtimeNotifications, notificationUtils } from "@/components/RealtimeNotifications";
 import { ConnectionMonitor, useConnectionMonitor } from "@/components/ConnectionMonitor";
 import { NotificationControls } from "@/components/NotificationControls";
@@ -18,6 +17,7 @@ import { CompactOrderCard } from "@/components/CompactOrderCard";
 import { GeneratePaymentDialog } from "@/components/GeneratePaymentDialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { UniformHeader } from "@/components/UniformHeader";
+import AdminLayout from "@/components/AdminLayout";
 import type { OrderStatus, PaymentStatus } from "@/components/StatusBadge";
 import { fetchAllWaiters, getWaiterName, type WaiterInfo } from "@/lib/waiterUtils";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
@@ -77,7 +77,6 @@ const Cashier = () => {
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("pending");
   const [selectedWaiterId, setSelectedWaiterId] = useState<string | null>(() => {
-    // Restore filter from localStorage on mount
     const saved = localStorage.getItem('cashier_waiter_filter');
     return saved || null;
   });
@@ -105,8 +104,13 @@ const Cashier = () => {
   // Track unread messages for all orders
   const { unreadCounts, markAsRead } = useUnreadMessages(orderIds);
 
-  // Store status management
-  const { isOpen: storeIsOpen, loading: storeStatusLoading, toggleStoreStatus } = useStoreStatus();
+  // Store status management - disabled for now
+  const { isOpen: storeIsOpen, loading: storeStatusLoading, toggleStoreStatus } = { isOpen: true, loading: false, toggleStoreStatus: () => {} };
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Caixa — PONTAL Carapitangui";
+  }, []);
 
   // Persist waiter filter selection to localStorage
   useEffect(() => {
@@ -587,7 +591,7 @@ const Cashier = () => {
   const completedPaymentBreakdown = getPaymentBreakdown(completedOrders);
 
   return (
-    <div className="min-h-screen bg-background">
+    <AdminLayout>
       <RealtimeNotifications 
         enabled={true}
         soundEnabled={true}
@@ -657,9 +661,8 @@ const Cashier = () => {
         onLogout={handleLogout}
       />
 
-      <div className="max-w-7xl mx-auto p-3 sm:p-4">
-        {/* Enhanced Summary Cards - Now Tab Selectors */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      {/* Enhanced Summary Cards - Now Tab Selectors */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card 
             className={`group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 backdrop-blur-sm overflow-hidden relative ${
               activeTab === 'pending' 
@@ -1637,7 +1640,6 @@ const Cashier = () => {
             )}
           </TabsContent>
         </Tabs>
-      </div>
 
       {/* Order Details Dialog */}
       <OrderDetailsDialog
@@ -1679,7 +1681,7 @@ const Cashier = () => {
         }}
         onOrderUpdated={loadOrders}
       />
-    </div>
+    </AdminLayout>
   );
 };
 

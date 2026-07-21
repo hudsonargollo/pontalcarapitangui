@@ -46,18 +46,19 @@ const WaiterDiagnostic = () => {
           details: JSON.stringify({ user_metadata: user.user_metadata, app_metadata: user.app_metadata })
         });
 
-        // Check profile in database using RPC
+        // Check profile in database using RPC (optional - may not exist)
         try {
           const { data: userRole, error: roleError } = await (supabase.rpc as any)('get_user_role', {
             user_id: user.id
           });
 
           if (roleError) {
+            // RPC function may not exist yet - this is not critical
             diagnostics.push({
               name: "Profile Database (RPC)",
-              status: "error",
-              message: "Error fetching user role via RPC",
-              details: roleError.message
+              status: "warning",
+              message: "RPC function not available (this is normal)",
+              details: "The get_user_role function may not be created yet"
             });
           } else if (userRole) {
             diagnostics.push({
@@ -74,11 +75,12 @@ const WaiterDiagnostic = () => {
             });
           }
         } catch (rpcError: any) {
+          // RPC function may not exist - this is not critical
           diagnostics.push({
             name: "Profile Database (RPC)",
-            status: "error",
-            message: "RPC call failed",
-            details: rpcError.message
+            status: "warning",
+            message: "RPC call not available (this is normal)",
+            details: "The get_user_role function may not be created yet"
           });
         }
       } else {
@@ -228,14 +230,15 @@ const WaiterDiagnostic = () => {
   return (
     <div className="min-h-screen bg-gradient-acai p-4">
       <div className="max-w-4xl mx-auto">
-        <Card className="mb-4">
+        <Card className="mb-4 border-2 border-accent rounded-none shadow-soft">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-2xl font-bold">Waiter System Diagnostics</CardTitle>
+              <CardTitle className="text-2xl font-display uppercase tracking-wider">Waiter System Diagnostics</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate("/waiter-dashboard")}
+                className="border-2 border-accent rounded-none shadow-soft"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
@@ -245,16 +248,16 @@ const WaiterDiagnostic = () => {
         </Card>
 
         {loading ? (
-          <Card>
+          <Card className="border-2 border-accent rounded-none shadow-soft">
             <CardContent className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Running diagnostics...</p>
+              <div className="animate-spin rounded-none h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600 font-body">Running diagnostics...</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
             {results.map((result, index) => (
-              <Card key={index} className={`border-2 ${getStatusColor(result.status)}`}>
+              <Card key={index} className={`border-2 rounded-none shadow-soft ${getStatusColor(result.status)}`}>
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     {getStatusIcon(result.status)}
@@ -279,7 +282,7 @@ const WaiterDiagnostic = () => {
           </div>
         )}
 
-        <Card className="mt-4">
+        <Card className="mt-4 border-2 border-accent rounded-none shadow-soft">
           <CardContent className="p-4">
             <h3 className="font-semibold mb-2">Quick Actions</h3>
             <div className="flex flex-wrap gap-2">

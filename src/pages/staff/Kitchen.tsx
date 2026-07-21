@@ -314,14 +314,14 @@ const Kitchen = () => {
         <div className="grid md:grid-cols-3 gap-4 lg:gap-6">
           {/* New Orders Column */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4 px-2">
               <Bell className="h-5 w-5 text-blue-500" />
-              <h2 className="text-lg lg:text-xl font-bold">Novos Pedidos</h2>
-              <Badge variant="secondary">{newOrders.length}</Badge>
+              <h2 className="text-lg lg:text-xl font-display uppercase tracking-wider">Novos Pedidos</h2>
+              <Badge className="bg-blue-500 text-white">{newOrders.length}</Badge>
             </div>
             <div className="space-y-4">
               {newOrders.length === 0 ? (
-                <Card className="p-8 text-center">
+                <Card className="p-8 text-center rounded-2xl shadow-lg border-0">
                   <div className="flex flex-col items-center">
                     <Bell className="w-16 h-16 text-gray-300 mb-4" />
                     <p className="text-lg font-medium text-gray-700 mb-2">Nenhum pedido novo</p>
@@ -334,7 +334,7 @@ const Kitchen = () => {
                 newOrders.map((order) => {
                   const waiterName = order.waiter_id ? getWaiterName(order.waiter_id) : null;
                   return (
-                    <Card key={order.id} className="p-4 shadow-medium border-l-4 border-l-blue-500">
+                    <Card key={order.id} className="p-4 shadow-lg border-l-4 border-l-blue-500 border-0 rounded-2xl bg-white hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start mb-3">
                         <div>
                           <h3 className="font-bold text-base lg:text-lg">
@@ -358,7 +358,7 @@ const Kitchen = () => {
                             </div>
                           )}
                         </div>
-                        <Badge className="bg-blue-500">
+                        <Badge className="bg-blue-500 text-white">
                           {order.status === "paid" ? "Pago" : "Novo"}
                         </Badge>
                       </div>
@@ -370,16 +370,16 @@ const Kitchen = () => {
                         ))}
                       </div>
                       {order.order_notes && (
-                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
                           <p className="text-xs font-semibold text-yellow-800 mb-1">Observações:</p>
                           <p className="text-xs text-yellow-700">{order.order_notes}</p>
                         </div>
                       )}
-                      <Button
-                        className="w-full"
-                        onClick={() => markAsInPreparation(order.id)}
-                        disabled={processingOrders.has(order.id)}
-                      >
+                        <Button
+                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-display uppercase tracking-wider rounded-xl shadow-lg hover:shadow-xl transition-all"
+                          onClick={() => markAsInPreparation(order.id)}
+                          disabled={processingOrders.has(order.id)}
+                        >
                         {processingOrders.has(order.id) ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -403,7 +403,7 @@ const Kitchen = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-5 w-5 text-primary" />
-              <h2 className="text-lg lg:text-xl font-bold">Em Preparo</h2>
+              <h2 className="text-lg lg:text-xl font-display uppercase tracking-wider">Em Preparo</h2>
               <Badge variant="secondary">{inProgressOrders.length}</Badge>
             </div>
             <div className="space-y-4">
@@ -421,7 +421,7 @@ const Kitchen = () => {
                 inProgressOrders.map((order) => {
                   const waiterName = order.waiter_id ? getWaiterName(order.waiter_id) : null;
                   return (
-                    <Card key={order.id} className="p-4 shadow-medium border-l-4 border-l-primary">
+                    <Card key={order.id} className="p-4 shadow-soft border-l-4 border-l-primary border-2 border-accent rounded-none">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -453,7 +453,7 @@ const Kitchen = () => {
                             </div>
                           )}
                         </div>
-                        <Badge className="bg-primary">Em Preparo</Badge>
+                        <Badge className="bg-primary text-white">Em Preparo</Badge>
                       </div>
                       <div className="space-y-2 mb-4">
                         {orderItems[order.id]?.map((item) => (
@@ -463,7 +463,7 @@ const Kitchen = () => {
                         ))}
                       </div>
                       {order.order_notes && (
-                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
                           <p className="text-xs font-semibold text-yellow-800 mb-1">Observações:</p>
                           <p className="text-xs text-yellow-700">{order.order_notes}</p>
                         </div>
@@ -473,12 +473,12 @@ const Kitchen = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => printKitchenReceipt(order.id)}
-                          className="flex-shrink-0"
+                          className="flex-shrink-0 border-2 border-accent/30 rounded-lg shadow-md hover:shadow-lg transition-shadow"
                         >
                           <Printer className="h-4 w-4" />
                         </Button>
                         <Button
-                          className="flex-1"
+                          className="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-display uppercase tracking-wider rounded-lg shadow-lg hover:shadow-xl transition-all"
                           onClick={() => markAsReady(order.id)}
                           disabled={processingOrders.has(order.id)}
                         >
@@ -504,14 +504,14 @@ const Kitchen = () => {
 
           {/* Ready Column */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle className="h-5 w-5 text-success" />
-              <h2 className="text-lg lg:text-xl font-bold">Pronto</h2>
-              <Badge variant="secondary">{readyOrders.length}</Badge>
+            <div className="flex items-center gap-2 mb-4 px-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <h2 className="text-lg lg:text-xl font-display uppercase tracking-wider">Pronto</h2>
+              <Badge className="bg-green-500 text-white">{readyOrders.length}</Badge>
             </div>
             <div className="space-y-4">
               {readyOrders.length === 0 ? (
-                <Card className="p-8 text-center">
+                <Card className="p-8 text-center rounded-2xl shadow-lg border-0">
                   <div className="flex flex-col items-center">
                     <CheckCircle className="w-16 h-16 text-gray-300 mb-4" />
                     <p className="text-lg font-medium text-gray-700 mb-2">Nenhum pedido pronto</p>
@@ -524,7 +524,7 @@ const Kitchen = () => {
                 readyOrders.map((order) => {
                   const waiterName = order.waiter_id ? getWaiterName(order.waiter_id) : null;
                   return (
-                    <Card key={order.id} className="p-4 shadow-medium border-l-4 border-l-success bg-success/5">
+                    <Card key={order.id} className="p-4 shadow-lg border-l-4 border-l-green-500 border-0 rounded-2xl bg-green-50/50 hover:shadow-xl transition-shadow">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -532,7 +532,7 @@ const Kitchen = () => {
                               Pedido #{order.order_number}
                             </h3>
                             {order.waiter_id && waiterName && waiterName !== 'Cliente' && (
-                              <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                              <Badge className="text-xs bg-green-100 text-green-700 border-green-300">
                                 <User className="h-3 w-3 mr-1" />
                                 Garçom
                               </Badge>
@@ -542,7 +542,7 @@ const Kitchen = () => {
                             {order.customer_name}
                           </p>
                           {waiterName && waiterName !== 'Cliente' && (
-                            <p className="text-xs text-success font-medium mt-1">
+                            <p className="text-xs text-green-600 font-medium mt-1">
                               Atendido por: {waiterName}
                             </p>
                           )}
@@ -556,7 +556,7 @@ const Kitchen = () => {
                             </div>
                           )}
                         </div>
-                        <Badge className="bg-success">Pronto</Badge>
+                        <Badge className="bg-green-500 text-white">Pronto</Badge>
                       </div>
                       <div className="space-y-2 mb-4">
                         {orderItems[order.id]?.map((item) => (
@@ -566,19 +566,18 @@ const Kitchen = () => {
                         ))}
                       </div>
                       {order.order_notes && (
-                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                        <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg">
                           <p className="text-xs font-semibold text-yellow-800 mb-1">Observações:</p>
                           <p className="text-xs text-yellow-700">{order.order_notes}</p>
                         </div>
                       )}
                       {order.status === 'completed' || processingOrders.has(order.id) ? (
-                        <div className="w-full p-3 bg-green-100 border-2 border-green-500 rounded text-center font-bold text-green-700 text-sm">
+                        <div className="w-full p-3 bg-green-100 border-2 border-green-500 rounded-lg text-center font-bold text-green-700 text-sm">
                           ✓ FINALIZADO
                         </div>
                       ) : (
                         <Button
-                          className="w-full"
-                          variant="outline"
+                          className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-display uppercase tracking-wider rounded-lg shadow-lg hover:shadow-xl transition-all"
                           onClick={() => markAsCompleted(order.id)}
                           disabled={processingOrders.has(order.id)}
                         >

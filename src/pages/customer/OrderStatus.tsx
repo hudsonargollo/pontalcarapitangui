@@ -39,6 +39,10 @@ const OrderStatus = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
+    document.title = "Status do Pedido — PONTAL Carapitangui";
+  }, []);
+
+  useEffect(() => {
     if (!orderId) {
       navigate('/');
       return;
@@ -136,20 +140,20 @@ const OrderStatus = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-indigo-600 text-white shadow-lg">
+      <div className="bg-gradient-ocean text-white shadow-soft">
         <div className="max-w-2xl mx-auto px-4 py-5 sm:py-6">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20 transition-all"
+              className="text-white hover:bg-white/20 transition-all rounded-lg"
               onClick={() => navigate('/menu')}
-              aria-label="Voltar"
+              aria-label="Voltar ao Menu"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-display uppercase tracking-wider">
                 Acompanhe seu Pedido
               </h1>
             </div>
@@ -160,7 +164,7 @@ const OrderStatus = () => {
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         {/* Status Card */}
-        <Card className="p-6 sm:p-8 shadow-xl border-2 border-primary/10">
+        <Card className="p-6 sm:p-8 shadow-soft border-2 border-accent rounded-xl">
           <div className="text-center mb-6">
             <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
               order.payment_status === 'confirmed' 
@@ -206,7 +210,7 @@ const OrderStatus = () => {
         </Card>
 
         {/* Order Items */}
-        <Card className="p-6 sm:p-8 shadow-xl border-2 border-primary/10">
+        <Card className="p-6 sm:p-8 shadow-soft border-2 border-accent rounded-xl">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">Itens do Pedido</h2>
             {order.payment_status === 'pending' && (
@@ -250,11 +254,11 @@ const OrderStatus = () => {
 
         {/* Sticky Payment Button */}
         {order.payment_status === 'pending' && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-primary/20 shadow-2xl p-4 z-50">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-accent shadow-soft p-4 z-50">
             <div className="max-w-2xl mx-auto">
               <Button
                 onClick={handleGoToPayment}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-7 text-xl shadow-xl hover:shadow-2xl transition-all"
+                className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-foreground font-display uppercase tracking-wider py-7 text-xl shadow-soft hover:shadow-lg transition-all rounded-xl"
               >
                 <CreditCard className="w-6 h-6 mr-2" />
                 PAGAR AGORA
@@ -264,15 +268,15 @@ const OrderStatus = () => {
         )}
 
         {order.payment_status === 'confirmed' && (
-          <Card className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-xl">
+          <Card className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-accent shadow-soft rounded-xl">
             <div className="text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
                 <CheckCircle className="w-12 h-12 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-green-900 mb-3">
+              <h3 className="text-2xl font-display uppercase tracking-wider text-green-900 mb-3">
                 Pagamento Confirmado! ✨
               </h3>
-              <p className="text-lg text-green-700 leading-relaxed">
+              <p className="text-lg font-body text-green-700 leading-relaxed">
                 Seu pedido está sendo preparado com carinho. Você receberá uma notificação no WhatsApp quando estiver pronto para retirada!
               </p>
             </div>

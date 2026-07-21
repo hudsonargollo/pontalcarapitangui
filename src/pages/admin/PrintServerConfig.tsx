@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { UniformHeader } from '@/components/UniformHeader';
 import { printServerClient } from '@/integrations/print-server/client';
 import { 
   Printer, 
@@ -334,17 +334,11 @@ Para mais informações, acesse o repositório do projeto.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-blue-50 to-indigo-100">
-      <UniformHeader
-        title="Configuração de Impressão"
-        onBack={() => navigate('/admin')}
-      />
-
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+    <AdminLayout>
+      <div className="space-y-6">
           
           {/* Quick Download Card */}
-          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50">
+          <Card className="border-2 border-accent bg-gradient-to-r from-primary/5 to-blue-50 rounded-xl shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5 text-primary" />
@@ -431,7 +425,7 @@ Para mais informações, acesse o repositório do projeto.`;
           </Card>
           
           {/* Status Card */}
-          <Card>
+          <Card className="border-2 border-accent rounded-xl shadow-soft">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
@@ -503,7 +497,7 @@ Para mais informações, acesse o repositório do projeto.`;
           </Card>
 
           {/* Configuration Card */}
-          <Card>
+          <Card className="border-2 border-accent rounded-xl shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
@@ -586,7 +580,7 @@ Para mais informações, acesse o repositório do projeto.`;
           </Card>
 
           {/* Installation Guide Card */}
-          <Card>
+          <Card className="border-2 border-accent rounded-xl shadow-soft">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Download className="h-5 w-5" />
@@ -723,7 +717,7 @@ Para mais informações, acesse o repositório do projeto.`;
           </Card>
 
           {/* Troubleshooting Card */}
-          <Card>
+          <Card className="border-2 border-accent rounded-xl shadow-soft">
             <CardHeader>
               <CardTitle>Solução de Problemas</CardTitle>
             </CardHeader>
@@ -760,9 +754,8 @@ Para mais informações, acesse o repositório do projeto.`;
             </CardContent>
           </Card>
 
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
