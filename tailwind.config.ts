@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         display: ["'Big Shoulders Display'", "'Archivo Narrow'", "sans-serif"],
         body: ["'Outfit'", "'Satoshi'", "sans-serif"],
+        reel: ["'Cormorant Garamond'", "Georgia", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -96,11 +97,16 @@ export default {
             transform: "translateX(10px)",
           },
         },
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "bounce-right": "bounce-right 2s ease-in-out 1",
+        fadeIn: "fadeIn 0.25s ease",
       },
     },
   },

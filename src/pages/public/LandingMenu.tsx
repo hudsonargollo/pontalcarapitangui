@@ -1,11 +1,25 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { useLang } from "@/i18n/LanguageProvider";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
-import { ChevronDown, ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import {
+  Play,
+  Pause,
+  MapPin,
+  Phone,
+  Clock,
+  Info,
+  X,
+  Search,
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Background
+import menuBgBokeh from "@/assets/menu-bg-bokeh.jpg";
 
 // Import menu images
 import octopusVinaigrette from "@/assets/menu/octopus-vinaigrette.jpg";
@@ -110,29 +124,190 @@ const imageMap: Record<string, string> = {
   "juice.jpg": juice,
 };
 
-function MenuPage() {
-  const { t } = useLang();
-  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+const ALL_TAB = "Todos";
+
+// Deterministic pseudo-rating in the 4.0–5.0 range, purely decorative (no rating column in DB)
+const getRating = (id: string) => {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return 4 + (hash % 11) / 10;
+};
+
+const StarRow = ({ rating }: { rating: number }) => (
+  <div className="flex items-center justify-center gap-0.5">
+    {Array.from({ length: 5 }).map((_, i) => {
+      const filled = rating >= i + 1;
+      const half = !filled && rating > i;
+      return (
+        <Star
+          key={i}
+          className={`w-3.5 h-3.5 ${
+            filled
+              ? "fill-amber-500 text-amber-600"
+              : half
+              ? "fill-amber-500/50 text-amber-600"
+              : "fill-transparent text-amber-800/30"
+          }`}
+        />
+      );
+    })}
+    <span className="ml-1.5 text-[10px] text-amber-900/60 font-semibold tracking-wide">
+      {rating.toFixed(1)}
+    </span>
+  </div>
+);
+
+const CornerFlourish = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 48 48" className={className} fill="none">
+    <path d="M3 3 Q3 26 26 26" stroke="currentColor" strokeWidth="1.4" />
+    <path d="M3 3 Q26 3 26 26" stroke="currentColor" strokeWidth="1.4" />
+    <circle cx="3" cy="3" r="2.2" fill="currentColor" />
+    <path d="M9 3 Q15 3 15 9" stroke="currentColor" strokeWidth="0.9" />
+    <path d="M3 9 Q3 15 9 15" stroke="currentColor" strokeWidth="0.9" />
+  </svg>
+);
+
+const flipVariants = {
+  enter: (dir: number) => ({
+    rotateY: dir >= 0 ? 78 : -78,
+    opacity: 0,
+    scale: 0.92,
+  }),
+  center: {
+    rotateY: 0,
+    opacity: 1,
+    scale: 1,
+  },
+  exit: (dir: number) => ({
+    rotateY: dir >= 0 ? -78 : 78,
+    opacity: 0,
+    scale: 0.92,
+  }),
+};
+
+interface FlipCardProps {
+  item: MenuItem;
+  direction: number;
+  imageUrl: string | null | undefined;
+  categoryLabel: string;
+  onSwipeNext: () => void;
+  onSwipePrev: () => void;
+}
+
+const CARD_SIZE_STYLE = { width: "min(300px, 100%)", height: "min(460px, 68vh)" } as const;
+
+const FlipCard = ({ item, direction, imageUrl, categoryLabel, onSwipeNext, onSwipePrev }: FlipCardProps) => {
+  const x = useMotionValue(0);
+  const rotateZ = useTransform(x, [-200, 200], [-10, 10]);
+
+  return (
+    <motion.div
+      drag="x"
+      style={{ x, rotateZ, ...CARD_SIZE_STYLE }}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.7}
+      onDragEnd={(_, info) => {
+        if (info.offset.x < -80) onSwipeNext();
+        else if (info.offset.x > 80) onSwipePrev();
+        x.set(0);
+      }}
+      className="relative cursor-grab active:cursor-grabbing"
+    >
+      <div className="relative w-full h-full" style={{ perspective: 1400 }}>
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          <motion.div
+            key={item.id}
+            custom={direction}
+            variants={flipVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+            className="absolute inset-0 rounded-[26px] overflow-hidden shadow-2xl shadow-black/60 border border-amber-900/20 flex flex-col"
+            style={{
+              background: "linear-gradient(160deg, #f8efdc 0%, #eeddb9 45%, #e4c99a 100%)",
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {/* Corner flourishes */}
+            <CornerFlourish className="absolute top-2.5 left-2.5 w-8 h-8 text-amber-800/60 z-10" />
+            <CornerFlourish className="absolute top-2.5 right-2.5 w-8 h-8 text-amber-800/60 z-10 rotate-90" />
+            <CornerFlourish className="absolute bottom-2.5 right-2.5 w-8 h-8 text-amber-800/60 z-10 rotate-180" />
+            <CornerFlourish className="absolute bottom-2.5 left-2.5 w-8 h-8 text-amber-800/60 z-10 -rotate-90" />
+
+            {/* Image */}
+            <div className="relative h-[52%] w-full overflow-hidden shrink-0">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt={item.name}
+                  className="w-full h-full object-cover select-none"
+                  style={{ filter: "sepia(0.12) saturate(1.3) contrast(1.06) brightness(1.03)" }}
+                  draggable={false}
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-amber-100 to-amber-200/60">
+                  <Sparkles className="w-8 h-8 text-amber-700/40" />
+                  <span className="text-[10px] text-amber-800/50 uppercase tracking-widest">Foto em breve</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#f8efdc] via-transparent to-black/10" />
+              <span className="absolute top-3 left-3 bg-[#3d2b1f]/90 text-amber-100 border border-amber-500/30 text-[9px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md backdrop-blur-sm">
+                {categoryLabel}
+              </span>
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 flex flex-col items-center justify-between text-center px-5 pt-3.5 pb-4 min-h-0">
+              <div className="min-h-0 overflow-hidden">
+                <h2 className="font-reel text-xl uppercase tracking-wide text-[#3d2b1f] font-semibold leading-tight">
+                  {item.name}
+                </h2>
+                <div className="my-1.5">
+                  <StarRow rating={getRating(item.id)} />
+                </div>
+                {item.description && (
+                  <p className="font-reel italic text-[13px] text-[#6b5638] leading-snug line-clamp-3">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+              <div className="mt-2 inline-block bg-[#3d2b1f] text-amber-100 font-reel font-bold text-base px-5 py-1.5 rounded-full shadow-md shrink-0">
+                R$ {item.price.toFixed(2)}
+              </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+};
+
+const LandingMenu = () => {
+  const navigate = useNavigate();
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [activeTab, setActiveTab] = useState(ALL_TAB);
+  const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deckIndex, setDeckIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     document.title = "Cardápio — PONTAL Carapitangui";
     loadMenu();
   }, []);
 
-  // Set first category as expanded when data loads
-  useEffect(() => {
-    if (categories.length > 0 && expandedCategory === null) {
-      setExpandedCategory(categories[0].id);
-    }
-  }, [categories, expandedCategory]);
-
   const loadMenu = async () => {
     try {
       setLoading(true);
-      
+
       const { data: categoriesData, error: catError } = await supabase
         .from("menu_categories")
         .select("*")
@@ -159,190 +334,357 @@ function MenuPage() {
     }
   };
 
-  const getCategoryItems = (categoryId: string) => {
-    return menuItems.filter(item => item.category_id === categoryId);
-  };
+  const categoryNameById = categories.reduce<Record<string, string>>((acc, c) => {
+    acc[c.id] = c.name;
+    return acc;
+  }, {});
 
   const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
-    const filename = imageUrl.split('/').pop();
+    const filename = imageUrl.split("/").pop();
     return filename ? imageMap[filename] : null;
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0.1,
-      },
-    },
+  const deckItems = menuItems.filter(
+    (item) => activeTab === ALL_TAB || categoryNameById[item.category_id] === activeTab
+  );
+
+  const q = searchQuery.trim().toLowerCase();
+  const searchResults = q
+    ? menuItems
+        .filter(
+          (item) =>
+            item.name.toLowerCase().includes(q) ||
+            (item.description ? item.description.toLowerCase().includes(q) : false)
+        )
+        .slice(0, 30)
+    : [];
+
+  // Reset deck position when the category changes, unless a search-jump is in flight
+  useEffect(() => {
+    if (pendingId) return;
+    setDeckIndex(0);
+    setDirection(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Resolve a pending search-jump once the deck reflects the target item's category
+  useEffect(() => {
+    if (!pendingId) return;
+    const idx = deckItems.findIndex((i) => i.id === pendingId);
+    if (idx >= 0) {
+      setDeckIndex(idx);
+      setDirection(0);
+      setPendingId(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingId, deckItems.length, activeTab]);
+
+  // Autoplay: flip to the next card on an interval
+  useEffect(() => {
+    if (!isPlaying || loading || q || deckItems.length <= 1) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setDeckIndex((i) => (i + 1) % deckItems.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isPlaying, loading, q, deckItems.length, activeTab]);
+
+  const goNext = () => {
+    if (deckItems.length === 0) return;
+    setDirection(1);
+    setDeckIndex((i) => (i + 1) % deckItems.length);
+    setIsPlaying(false);
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.3 },
-    },
+  const goPrev = () => {
+    if (deckItems.length === 0) return;
+    setDirection(-1);
+    setDeckIndex((i) => (i - 1 + deckItems.length) % deckItems.length);
+    setIsPlaying(false);
+  };
+
+  const jumpToItem = (item: MenuItem) => {
+    const catName = categoryNameById[item.category_id] ?? ALL_TAB;
+    setDirection(0);
+    setActiveTab(catName);
+    setPendingId(item.id);
+    setSearchQuery("");
+    setIsPlaying(false);
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-stone-950">
         <div className="text-center">
-          <div className="mb-4 inline-block">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-border border-t-secondary"></div>
-          </div>
-          <p className="text-muted-foreground">Carregando cardápio...</p>
+          <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-stone-800 border-t-amber-500" />
+          <p className="text-sm text-stone-400">Carregando cardápio...</p>
         </div>
       </div>
     );
   }
 
+  const categoryTabs = [ALL_TAB, ...categories.map((c) => c.name)];
+  const currentItem = deckItems[deckIndex] ?? null;
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-      {/* Header Section */}
-      <motion.header
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-16"
-      >
-        <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-secondary">
-            {t.hero.eyebrow}
-          </p>
-          <h1 className="mt-3 font-display text-5xl sm:text-6xl">{t.menu.title}</h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">{t.menu.lead}</p>
-        </div>
-      </motion.header>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-stone-100 font-sans sm:p-4 md:p-8">
+      {/* 9:16 Mobile Frame — full-screen on mobile, framed on desktop */}
+      <div className="relative w-full sm:max-w-[430px] h-[100dvh] sm:h-[820px] sm:rounded-[40px] overflow-hidden sm:border-4 sm:border-stone-800 shadow-2xl shadow-amber-950/50 flex flex-col">
+        {/* Cinematic bokeh background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${menuBgBokeh})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/45 to-black/80" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-80 bg-gradient-to-b from-amber-600/15 via-amber-900/5 to-transparent pointer-events-none" />
 
-      {/* Categories Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-12"
-      >
-        {categories.map((category) => {
-          const categoryItems = getCategoryItems(category.id);
-          if (categoryItems.length === 0) return null;
-
-          return (
-            <motion.section key={category.id} variants={itemVariants}>
-              {/* Category Header */}
+        {/* Header */}
+        <header className="relative z-10 pt-6 pb-3 px-5 text-center shrink-0">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-amber-200/90 uppercase">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Sparkles className="w-3 h-3 text-amber-400" /> Cardápio Completo
+            </span>
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() =>
-                  setExpandedCategory(
-                    expandedCategory === category.id ? null : category.id
-                  )
-                }
-                className="group mb-8 flex w-full items-center justify-between border-b-2 border-border pb-4 transition-colors hover:border-secondary"
+                onClick={() => setShowInfo(true)}
+                className="flex items-center justify-center bg-stone-900/60 hover:bg-stone-800/80 text-amber-300 w-8 h-8 rounded-full transition border border-amber-500/30"
+                aria-label="Onde estamos"
               >
-                <div className="text-left">
-                  <h2 className="font-display text-3xl text-foreground">
-                    {category.name}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {categoryItems.length} {categoryItems.length === 1 ? "item" : "items"}
+                <Info className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsPlaying((p) => !p)}
+                className="flex items-center gap-1.5 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 px-3 py-1.5 rounded-full text-xs transition border border-amber-500/30 font-medium min-h-[32px]"
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause className="w-3.5 h-3.5 fill-current" /> Pausar
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" /> Auto-Play
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <button onClick={() => navigate("/")} className="block w-full">
+            <p className="text-[10px] tracking-[0.3em] text-amber-400 font-semibold uppercase mb-1">
+              Península de Maraú — Bahia
+            </p>
+            <h1 className="text-2xl font-reel tracking-wide text-stone-100 font-light">
+              PONTAL <span className="font-semibold text-amber-200/90">CARAPITANGUI</span>
+            </h1>
+          </button>
+          <div className="w-12 h-px bg-amber-500/40 mx-auto my-2.5" />
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+            <input
+              type="text"
+              placeholder="Buscar petiscos, pratos, drinks..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsPlaying(false);
+              }}
+              className="w-full bg-stone-900/80 border border-stone-700/60 rounded-full py-2 pl-8 pr-8 text-xs text-stone-200 placeholder-stone-500 focus:outline-none focus:border-amber-600 transition-colors"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
+                aria-label="Limpar busca"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide pb-1 pt-0.5">
+            {categoryTabs.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveTab(cat);
+                  setIsPlaying(false);
+                }}
+                className={`text-[11px] px-3 py-1.5 rounded-full whitespace-nowrap transition-all duration-300 shrink-0 min-h-[30px] ${
+                  activeTab === cat
+                    ? "bg-amber-700 text-amber-50 font-medium shadow-sm shadow-amber-900/50 scale-105"
+                    : "text-stone-300 hover:text-stone-100 bg-stone-900/60"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </header>
+
+        {/* Main: search results OR the flip deck */}
+        {q ? (
+          <main className="relative z-[5] flex-1 overflow-y-auto px-4 pb-6 pt-1 space-y-2 scrollbar-hide">
+            {searchResults.length === 0 ? (
+              <div className="text-center py-16 text-stone-400 text-xs font-light">
+                Nenhum item encontrado para &ldquo;{searchQuery}&rdquo;.
+              </div>
+            ) : (
+              searchResults.map((item) => {
+                const imageUrl = getImageUrl(item.image_url);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => jumpToItem(item)}
+                    className="w-full flex items-center gap-3 bg-[#f8efdc]/95 hover:bg-[#f8efdc] rounded-xl p-2.5 border border-amber-800/30 transition-colors text-left shadow-md"
+                  >
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-amber-100 shrink-0 border border-amber-700/30">
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Sparkles className="w-4 h-4 text-amber-700/50" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-reel text-sm text-[#3d2b1f] font-semibold truncate">{item.name}</p>
+                      <p className="text-[10px] text-amber-800/70 uppercase tracking-wide">
+                        {categoryNameById[item.category_id]}
+                      </p>
+                    </div>
+                    <span className="font-reel text-xs font-bold text-[#3d2b1f] shrink-0">
+                      R$ {item.price.toFixed(2)}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </main>
+        ) : (
+          <main className="relative z-[5] flex-1 flex flex-col items-center justify-center px-6 min-h-0">
+            <div className="relative w-full flex items-center justify-center">
+              {deckItems.length > 1 && (
+                <button
+                  onClick={goPrev}
+                  className="absolute left-0 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-stone-900/70 border border-amber-500/30 text-amber-300 hover:bg-stone-800/90 transition"
+                  aria-label="Item anterior"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
+
+              {currentItem ? (
+                <FlipCard
+                  item={currentItem}
+                  direction={direction}
+                  imageUrl={getImageUrl(currentItem.image_url)}
+                  categoryLabel={categoryNameById[currentItem.category_id] ?? ""}
+                  onSwipeNext={goNext}
+                  onSwipePrev={goPrev}
+                />
+              ) : (
+                <div
+                  className="rounded-[26px] flex flex-col items-center justify-center gap-2 border border-amber-900/20 shadow-2xl shadow-black/60"
+                  style={{
+                    background: "linear-gradient(160deg, #f8efdc 0%, #eeddb9 45%, #e4c99a 100%)",
+                    ...CARD_SIZE_STYLE,
+                  }}
+                >
+                  <Sparkles className="w-8 h-8 text-amber-700/40" />
+                  <p className="text-xs text-amber-800/60 font-reel italic">
+                    Nenhum item disponível nesta categoria.
                   </p>
                 </div>
-                <ChevronDown
-                  className={`h-6 w-6 text-secondary transition-transform duration-300 ${
-                    expandedCategory === category.id ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* Items Grid */}
-              {expandedCategory === category.id && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-                >
-                  {categoryItems.map((item, idx) => {
-                    const imageUrl = getImageUrl(item.image_url);
-                    
-                    return (
-                      <motion.article
-                        key={item.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.05 }}
-                        className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-secondary hover:shadow-lg"
-                      >
-                        {/* Image */}
-                        <div className="relative h-48 overflow-hidden bg-muted">
-                          {imageUrl ? (
-                            <img
-                              src={imageUrl}
-                              alt={item.name}
-                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="h-full w-full flex items-center justify-center bg-muted">
-                              <ShoppingCart className="h-12 w-12 text-muted-foreground/30" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-5">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1">
-                              <h3 className="font-display text-lg text-foreground">
-                                {item.name}
-                              </h3>
-                              {item.description && (
-                                <p className="mt-2 text-sm text-muted-foreground">
-                                  {item.description}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <p className="mt-4 font-display text-xl text-secondary">
-                            R$ {item.price.toFixed(2)}
-                          </p>
-                        </div>
-                      </motion.article>
-                    );
-                  })}
-                </motion.div>
               )}
-            </motion.section>
-          );
-        })}
-      </motion.div>
 
-      {/* Footer Note */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-16 text-center text-sm text-muted-foreground"
-      >
-        {t.menu.note}
-      </motion.p>
-    </div>
-  );
-}
+              {deckItems.length > 1 && (
+                <button
+                  onClick={goNext}
+                  className="absolute right-0 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-stone-900/70 border border-amber-500/30 text-amber-300 hover:bg-stone-800/90 transition"
+                  aria-label="Próximo item"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
 
-const LandingMenu = () => {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1">
-        <MenuPage />
-      </main>
-      <Footer />
+            {/* Progress */}
+            {deckItems.length > 0 && (
+              <div className="mt-4 flex flex-col items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  {deckItems.length <= 10 ? (
+                    deckItems.map((item, i) => (
+                      <span
+                        key={item.id}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          i === deckIndex ? "w-4 bg-amber-400" : "w-1.5 bg-stone-600"
+                        }`}
+                      />
+                    ))
+                  ) : (
+                    <span className="text-[10px] text-stone-400 tracking-widest uppercase font-medium">
+                      {deckIndex + 1} / {deckItems.length}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[9px] text-stone-500 tracking-widest uppercase">
+                  {isPlaying ? "Reproduzindo automaticamente" : "Deslize ou toque nas setas"}
+                </span>
+              </div>
+            )}
+          </main>
+        )}
+
+        {/* Onde Estamos — Info Modal */}
+        {showInfo && (
+          <div
+            className="absolute inset-0 z-50 bg-stone-950/90 backdrop-blur-md flex items-center justify-center p-5 animate-fadeIn"
+            onClick={() => setShowInfo(false)}
+          >
+            <div
+              className="bg-stone-900 border border-amber-900/60 rounded-2xl p-5 max-w-xs w-full shadow-2xl relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowInfo(false)}
+                className="absolute top-3 right-3 text-stone-400 hover:text-white p-1 rounded-full bg-stone-800/80 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <h4 className="font-reel text-xs tracking-widest text-amber-400 uppercase mb-4 font-semibold">
+                — Onde Estamos —
+              </h4>
+              <div className="space-y-3.5 text-left text-xs text-stone-300">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>Praia do Carapitangui, Barra Grande — Maraú, BA</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>Aberto todos os dias • 9h às 22h</span>
+                </div>
+                <a
+                  href="https://wa.me/5573999999999"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 hover:text-amber-300 transition-colors"
+                >
+                  <Phone className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>+55 (73) 99999-9999 — Falar no WhatsApp</span>
+                </a>
+              </div>
+              <p className="font-reel italic text-sm text-stone-500 mt-6 text-center">
+                Gastronomia &amp; Drinks na Península de Maraú
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
