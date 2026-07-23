@@ -48,7 +48,7 @@ echo ""
 
 # Deploy to Cloudflare Pages
 echo -e "${YELLOW}☁️  Deploying to Cloudflare Pages...${NC}"
-wrangler pages deploy dist --project-name=coco-loko-acaiteria --branch=main --commit-dirty=true
+wrangler pages deploy dist --project-name=pontalcarapitangui --branch=main --commit-dirty=true
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Deployment failed${NC}"
@@ -64,7 +64,7 @@ echo -e "  • Build: ${GREEN}✓${NC} Application built"
 echo -e "  • Cloudflare: ${GREEN}✓${NC} Deployed to Pages"
 echo ""
 echo -e "${BLUE}🌐 Your app is live at:${NC}"
-echo -e "  Production: ${GREEN}https://coco-loko-acaiteria.pages.dev${NC}"
+echo -e "  Production: ${GREEN}https://pontalcarapitangui.pages.dev${NC}"
 echo ""
 echo -e "${YELLOW}💡 Tip: GitHub Actions will also deploy automatically${NC}"
 echo ""

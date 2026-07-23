@@ -49,7 +49,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: coco-loko-acaiteria
+          projectName: pontalcarapitangui
           directory: dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           branch: main
@@ -57,4 +57,4 @@ jobs:
       - name: Deployment Summary
         run: |
           echo "✅ Deployment completed successfully!"
-          echo "🔗 Your app is live at: https://coco-loko-acaiteria.pages.dev"
+          echo "🔗 Your app is live at: https://pontalcarapitangui.pages.dev"
