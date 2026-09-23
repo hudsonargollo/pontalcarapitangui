@@ -8,19 +8,14 @@ import {
   Minus,
   Heart,
   ChevronRight,
+  ChevronLeft,
   Sparkles,
   UtensilsCrossed,
   BellRing,
-  ReceiptText,
   Check,
-  ChevronLeft,
-  Share2,
-  Info,
-  Flame,
-  Leaf,
-  WheatOff,
-  MilkOff,
-  SlidersHorizontal,
+  Edit3,
+  Save,
+  RotateCcw,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "@/lib/cartContext";
@@ -125,7 +120,85 @@ function getImageUrl(imagePath?: string) {
   return imageMap[filename] || imagePath;
 }
 
-// Enriched item metadata for tags and features
+// Banner Type & Defaults
+export interface PromoBanner {
+  id: string;
+  badge: { pt: string; en: string };
+  title: { pt: string; en: string };
+  subtitle: { pt: string; en: string };
+  location: { pt: string; en: string };
+  image: string;
+  categoryTarget?: string;
+  isActive: boolean;
+}
+
+const DEFAULT_BANNERS: PromoBanner[] = [
+  {
+    id: "banner-1",
+    badge: { pt: "Destaque do Chef", en: "Chef's Special" },
+    title: {
+      pt: "Frutos do Mar Frescos & Sunset",
+      en: "Fresh Seafood & Sunset Vibes",
+    },
+    subtitle: {
+      pt: "Camarões gratinados, peixes frescos e o visual inesquecível do Rio Carapitangui.",
+      en: "Gratinéed shrimp, fresh catch, and stunning views by Rio Carapitangui.",
+    },
+    location: { pt: "Barra Grande • Bahia", en: "Barra Grande • Bahia" },
+    image: shrimpcarapitanguiImg,
+    categoryTarget: "especial",
+    isActive: true,
+  },
+  {
+    id: "banner-2",
+    badge: { pt: "Mixologia Autoral", en: "Signature Mixology" },
+    title: {
+      pt: "Drinks Pontal Experiência",
+      en: "Pontal Signature Drinks",
+    },
+    subtitle: {
+      pt: "Cocktails exclusivos preparados com ingredientes tropicais e alta mixologia.",
+      en: "Exclusive cocktails crafted with fresh tropical notes and premium spirits.",
+    },
+    location: { pt: "Bar da Praia & Lounge", en: "Beach Bar & Lounge" },
+    image: blueLagoonImg,
+    categoryTarget: "drinks-experiencia",
+    isActive: true,
+  },
+  {
+    id: "banner-3",
+    badge: { pt: "Para Compartilhar", en: "To Share" },
+    title: {
+      pt: "Dadinhos de Tapioca & Petiscos",
+      en: "Tapioca Cubes & Beach Bites",
+    },
+    subtitle: {
+      pt: "Porções crocantes perfeitas para curtir com uma cerveja artesanal ou drink gelado.",
+      en: "Crispy appetizers made for sharing with cold beer or fresh cocktails.",
+    },
+    location: { pt: "Quiosque & Bangalôs", en: "Kiosk & Bungalows" },
+    image: tapiocacubesImg,
+    categoryTarget: "petiscos",
+    isActive: true,
+  },
+  {
+    id: "banner-4",
+    badge: { pt: "Especial da Casa", en: "House Special" },
+    title: {
+      pt: "Misto do Mar para 2 Pessoas",
+      en: "Seafood Mix for Two",
+    },
+    subtitle: {
+      pt: "Polvo, camarão, lula e peixe branco com arroz aromático e legumes salteados.",
+      en: "Octopus, shrimp, squid and white fish served with savory rice and sautéed veggies.",
+    },
+    location: { pt: "Almoço & Jantar", en: "Lunch & Dinner" },
+    image: seafoodmixImg,
+    categoryTarget: "especial",
+    isActive: true,
+  },
+];
+
 interface LiveItem extends BaseMenuItem {
   categoryKey: string;
   categoryName: { pt: string; en: string };
@@ -141,7 +214,7 @@ export default function LiveMenu() {
   const { lang, setLang } = useLang();
   const { state: cartState, addItem, removeItem, updateQuantity, getTotalPrice, getTotalItems } = useCart();
 
-  // URL & Local Table tracking
+  // Table State
   const [tableNumber, setTableNumber] = useState<string>(() => {
     const fromUrl = searchParams.get("mesa") || searchParams.get("table");
     if (fromUrl) {
@@ -158,7 +231,22 @@ export default function LiveMenu() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [activeCategory, setActiveCategory] = useState<string>(menu[0]?.key || "frios");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Banners State & Carousel
+  const [banners, setBanners] = useState<PromoBanner[]>(() => {
+    const saved = localStorage.getItem("pontal_live_banners");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Error parsing saved banners", e);
+      }
+    }
+    return DEFAULT_BANNERS;
+  });
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [isBannerAdminOpen, setIsBannerAdminOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<PromoBanner | null>(null);
 
   // Modal / Detail States
   const [selectedItem, setSelectedItem] = useState<LiveItem | null>(null);
@@ -174,8 +262,9 @@ export default function LiveMenu() {
   const [includeTip, setIncludeTip] = useState(true);
 
   // Scrollspy & Nav refs
-  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const categoryRefs = useRef<Record<string, HTMLElement | null>>({});
   const tabsContainerRef = useRef<HTMLDivElement | null>(null);
+  const isProgrammaticScroll = useRef(false);
 
   useEffect(() => {
     document.title = "Cardápio Digital — Pontal Carapitangui";
@@ -189,6 +278,17 @@ export default function LiveMenu() {
       setCurrentTableId(urlTable);
     }
   }, [searchParams]);
+
+  // Auto-rotate active banner carousel
+  const activeBanners = useMemo(() => banners.filter((b) => b.isActive), [banners]);
+
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, [activeBanners.length]);
 
   // Flatten & enrich menu items
   const allEnrichedItems = useMemo<LiveItem[]>(() => {
@@ -212,15 +312,33 @@ export default function LiveMenu() {
           isFeatured = true;
         }
 
-        if (itemNamePt.includes("tapioca") || itemNamePt.includes("aipim") || itemNamePt.includes("batata") || itemNamePt.includes("suco") || itemNamePt.includes("açaí")) {
+        if (
+          itemNamePt.includes("tapioca") ||
+          itemNamePt.includes("aipim") ||
+          itemNamePt.includes("batata") ||
+          itemNamePt.includes("suco") ||
+          itemNamePt.includes("açaí")
+        ) {
           tags.push("veggie");
         }
 
-        if (itemNamePt.includes("ceviche") || itemNamePt.includes("polvo") || itemNamePt.includes("grelhado") || itemNamePt.includes("aipim") || itemNamePt.includes("tapioca")) {
+        if (
+          itemNamePt.includes("ceviche") ||
+          itemNamePt.includes("polvo") ||
+          itemNamePt.includes("grelhado") ||
+          itemNamePt.includes("aipim") ||
+          itemNamePt.includes("tapioca")
+        ) {
           tags.push("sem-gluten");
         }
 
-        if (itemNamePt.includes("ceviche") || itemNamePt.includes("polvo") || itemNamePt.includes("grelhado") || itemNamePt.includes("aipim") || itemNamePt.includes("isca de peixe")) {
+        if (
+          itemNamePt.includes("ceviche") ||
+          itemNamePt.includes("polvo") ||
+          itemNamePt.includes("grelhado") ||
+          itemNamePt.includes("aipim") ||
+          itemNamePt.includes("isca de peixe")
+        ) {
           tags.push("sem-lactose");
         }
 
@@ -287,42 +405,77 @@ export default function LiveMenu() {
       .filter((cat) => cat.items.length > 0);
   }, [allEnrichedItems, searchQuery, activeFilter]);
 
-  // Scrollspy observer to update active category tab
+  // Robust Scrollspy observer using getBoundingClientRect
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 180;
+      if (isProgrammaticScroll.current) return;
+
+      const triggerY = 220; // Trigger line below sticky header
+      let currentActive = activeCategory;
+
       for (const cat of menu) {
         const el = categoryRefs.current[cat.key];
         if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveCategory(cat.key);
-            // Center the active category tab smoothly
-            const tabBtn = document.getElementById(`tab-btn-${cat.key}`);
-            if (tabBtn && tabsContainerRef.current) {
-              const container = tabsContainerRef.current;
-              const scrollLeft =
-                tabBtn.offsetLeft - container.offsetWidth / 2 + tabBtn.offsetWidth / 2;
-              container.scrollTo({ left: scrollLeft, behavior: "smooth" });
-            }
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= triggerY && rect.bottom > triggerY) {
+            currentActive = cat.key;
             break;
           }
+        }
+      }
+
+      if (currentActive !== activeCategory) {
+        setActiveCategory(currentActive);
+        // Center the active category tab smoothly
+        const tabBtn = document.getElementById(`tab-btn-${currentActive}`);
+        if (tabBtn && tabsContainerRef.current) {
+          const container = tabsContainerRef.current;
+          const scrollLeft =
+            tabBtn.offsetLeft - container.offsetWidth / 2 + tabBtn.offsetWidth / 2;
+          container.scrollTo({ left: scrollLeft, behavior: "smooth" });
         }
       }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [activeCategory]);
 
+  // Fix: Click-to-scroll category handler with reliable document offset
   const scrollToCategory = (key: string) => {
-    setActiveCategory(key);
-    const el = categoryRefs.current[key];
-    if (el) {
-      const offsetTop = el.offsetTop - 140;
-      window.scrollTo({ top: offsetTop, behavior: "smooth" });
+    // If filtered out, reset search and tag filters so all categories appear
+    if (searchQuery || activeFilter !== "all") {
+      setSearchQuery("");
+      setActiveFilter("all");
     }
+
+    setActiveCategory(key);
+    isProgrammaticScroll.current = true;
+
+    // Center tab button immediately
+    const tabBtn = document.getElementById(`tab-btn-${key}`);
+    if (tabBtn && tabsContainerRef.current) {
+      const container = tabsContainerRef.current;
+      const scrollLeft =
+        tabBtn.offsetLeft - container.offsetWidth / 2 + tabBtn.offsetWidth / 2;
+      container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+    }
+
+    setTimeout(() => {
+      const el = categoryRefs.current[key];
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const targetY = rect.top + scrollTop - 150; // Offset for sticky headers
+        window.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: "smooth",
+        });
+      }
+      setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 700);
+    }, 60);
   };
 
   const handleOpenDetail = (item: LiveItem) => {
@@ -421,7 +574,6 @@ export default function LiveMenu() {
     })}`;
 
     const encoded = encodeURIComponent(text);
-    // Deep-link WhatsApp to Pontal staff
     window.open(`https://wa.me/5573999999999?text=${encoded}`, "_blank");
 
     toast.success(
@@ -434,6 +586,22 @@ export default function LiveMenu() {
     setWaiterNotes("");
   };
 
+  // Banner Admin Handlers
+  const handleSaveBanner = (updated: PromoBanner) => {
+    const newBanners = banners.map((b) => (b.id === updated.id ? updated : b));
+    setBanners(newBanners);
+    localStorage.setItem("pontal_live_banners", JSON.stringify(newBanners));
+    setEditingBanner(null);
+    toast.success(lang === "pt" ? "Banner atualizado com sucesso!" : "Banner updated successfully!");
+  };
+
+  const handleResetBanners = () => {
+    setBanners(DEFAULT_BANNERS);
+    localStorage.removeItem("pontal_live_banners");
+    setIsBannerAdminOpen(false);
+    toast.info(lang === "pt" ? "Banners restaurados para o padrão." : "Banners reset to default.");
+  };
+
   const filterChips = [
     { id: "all", label: lang === "pt" ? "Todos os Itens" : "All Items", icon: null },
     { id: "destaque", label: lang === "pt" ? "Destaques" : "Best Sellers", icon: "⭐" },
@@ -443,33 +611,29 @@ export default function LiveMenu() {
     { id: "picante", label: lang === "pt" ? "Picante" : "Spicy", icon: "🌶️" },
   ];
 
+  const currentBanner = activeBanners[currentBannerIndex] || activeBanners[0];
+
   return (
     <div className="min-h-screen bg-[#F2EEE4] text-[#1A2B2A] pb-32 selection:bg-[#BC6C25] selection:text-white font-sans">
       {/* ================= STICKY TOP BRAND & ACTION BAR ================= */}
-      <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E5DFD3] shadow-sm transition-all">
+      <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E5DFD3] shadow-xs transition-all">
+        {/* Main Header Container (Contained to max-w-5xl) */}
         <div className="max-w-5xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-3">
-            {/* Brand / Logo */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate("/")}
-                className="text-left group transition-transform active:scale-95"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="font-display font-black text-xl tracking-tight text-[#1A2B2A] group-hover:text-[#BC6C25] transition-colors">
-                    PONTAL
-                  </span>
-                  <span className="hidden xs:inline-block text-[10px] uppercase font-bold tracking-[0.25em] px-2 py-0.5 rounded-md bg-[#BC6C25]/10 text-[#BC6C25]">
-                    Carapitangui
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#A8A294] font-medium tracking-wide">
-                  {lang === "pt" ? "Cardápio & Comanda Digital" : "Digital Menu & Table Order"}
-                </p>
-              </button>
-            </div>
+            {/* Logo Image replacing text name */}
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 text-left group transition-transform active:scale-95"
+              aria-label="Pontal Carapitangui — Início"
+            >
+              <img
+                src="/logo-pontal.webp"
+                alt="PONTAL Carapitangui"
+                className="h-9 sm:h-11 w-auto object-contain drop-shadow-xs"
+              />
+            </button>
 
-            {/* Table Badge & Controls */}
+            {/* Table Badge & Top Actions */}
             <div className="flex items-center gap-2">
               {/* Table Button */}
               <button
@@ -477,7 +641,7 @@ export default function LiveMenu() {
                   setTempTableInput(tableNumber);
                   setTableModalOpen(true);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2EEE4] hover:bg-[#EAE4D6] border border-[#D9D2C2] text-xs font-bold text-[#1A2B2A] transition-colors shadow-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2EEE4] hover:bg-[#EAE4D6] border border-[#D9D2C2] text-xs font-bold text-[#1A2B2A] transition-colors shadow-xs"
               >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>{formatTableDisplay(tableNumber)}</span>
@@ -511,7 +675,7 @@ export default function LiveMenu() {
               <button
                 onClick={() => setIsWaiterModalOpen(true)}
                 title={lang === "pt" ? "Chamar Garçom" : "Call Waiter"}
-                className="p-2 rounded-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white transition-colors shadow-sm active:scale-90"
+                className="p-2 rounded-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white transition-colors shadow-xs active:scale-90"
               >
                 <BellRing className="w-4 h-4 text-amber-300" />
               </button>
@@ -519,7 +683,7 @@ export default function LiveMenu() {
           </div>
 
           {/* Search Bar Input */}
-          <div className="mt-3 relative">
+          <div className="mt-2.5 relative">
             <div className="relative flex items-center">
               <Search className="absolute left-3.5 w-4 h-4 text-[#A8A294]" />
               <input
@@ -545,83 +709,172 @@ export default function LiveMenu() {
           </div>
         </div>
 
-        {/* ================= HORIZONTAL STICKY CATEGORY TABS (SCROLLSPY) ================= */}
-        <div
-          ref={tabsContainerRef}
-          className="w-full overflow-x-auto no-scrollbar border-t border-[#EDE7DB] bg-[#FFFFFF] px-4 py-2.5 flex items-center gap-2"
-        >
-          {menu.map((cat) => {
-            const isActive = activeCategory === cat.key;
-            return (
-              <button
-                key={cat.key}
-                id={`tab-btn-${cat.key}`}
-                onClick={() => scrollToCategory(cat.key)}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
-                  isActive
-                    ? "bg-[#1A2B2A] text-white shadow-md scale-102"
-                    : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
-                }`}
-              >
-                {pick(cat.name, lang)}
-              </button>
-            );
-          })}
+        {/* ================= CONTAINED HORIZONTAL CATEGORY TABS (SCROLLSPY) ================= */}
+        <div className="border-t border-[#EDE7DB] bg-[#FFFFFF]">
+          <div
+            ref={tabsContainerRef}
+            className="max-w-5xl mx-auto px-4 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2"
+          >
+            {menu.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              return (
+                <button
+                  key={cat.key}
+                  id={`tab-btn-${cat.key}`}
+                  onClick={() => scrollToCategory(cat.key)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
+                    isActive
+                      ? "bg-[#1A2B2A] text-white shadow-md scale-102"
+                      : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
+                  }`}
+                >
+                  {pick(cat.name, lang)}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Dietary & Highlight Quick Filter Chips */}
-        <div className="w-full overflow-x-auto no-scrollbar bg-[#FAF8F3] px-4 py-2 flex items-center gap-1.5 border-t border-[#F0EBE0]">
-          {filterChips.map((chip) => {
-            const isSelected = activeFilter === chip.id;
-            return (
-              <button
-                key={chip.id}
-                onClick={() => setActiveFilter(chip.id)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-colors shrink-0 ${
-                  isSelected
-                    ? "bg-[#BC6C25] text-white shadow-xs"
-                    : "bg-white text-[#1A2B2A]/80 hover:bg-[#F2EEE4] border border-[#E2DC CE]"
-                }`}
-              >
-                {chip.icon && <span>{chip.icon}</span>}
-                <span>{chip.label}</span>
-              </button>
-            );
-          })}
+        {/* ================= CONTAINED DIETARY & HIGHLIGHT FILTER CHIPS ================= */}
+        <div className="bg-[#FAF8F3] border-t border-[#F0EBE0]">
+          <div className="max-w-5xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar flex items-center gap-1.5">
+            {filterChips.map((chip) => {
+              const isSelected = activeFilter === chip.id;
+              return (
+                <button
+                  key={chip.id}
+                  onClick={() => setActiveFilter(chip.id)}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-colors shrink-0 ${
+                    isSelected
+                      ? "bg-[#BC6C25] text-white shadow-xs"
+                      : "bg-white text-[#1A2B2A]/80 hover:bg-[#F2EEE4] border border-[#E2DC CE]"
+                  }`}
+                >
+                  {chip.icon && <span>{chip.icon}</span>}
+                  <span>{chip.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
-      {/* ================= PROMO HERO BANNER SPOTLIGHT ================= */}
-      <div className="max-w-5xl mx-auto px-4 pt-4">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1A2B2A] via-[#243534] to-[#1A2B2A] p-5 text-white shadow-lg">
-          <div className="relative z-10 max-w-md">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[11px] font-bold uppercase tracking-wider border border-amber-300/30">
-                <Sparkles className="w-3 h-3" />
-                {lang === "pt" ? "Experiência Gastronômica" : "Gastronomic Experience"}
-              </span>
-              <span className="text-xs text-white/70 font-medium">Barra Grande • Bahia</span>
+      {/* ================= MULTI-BANNER SPOTLIGHT CAROUSEL WITH IMAGE BACKGROUNDS ================= */}
+      {activeBanners.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 pt-4">
+          <div className="relative overflow-hidden rounded-3xl min-h-[160px] sm:min-h-[190px] shadow-lg border border-[#D9D2C2]/60 group">
+            {/* Background Image with Dark Scrim Gradient */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentBanner.id}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="absolute inset-0 z-0"
+              >
+                <img
+                  src={getImageUrl(currentBanner.image)}
+                  alt={pick(currentBanner.title, lang)}
+                  className="w-full h-full object-cover"
+                />
+                {/* Dual Scrim overlay for high typography legibility */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0F1716]/95 via-[#0F1716]/75 to-transparent sm:to-[#0F1716]/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F1716]/90 via-transparent to-transparent" />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Banner Content */}
+            <div className="relative z-10 p-5 sm:p-6 text-white max-w-lg flex flex-col justify-between min-h-[160px] sm:min-h-[190px]">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#BC6C25]/80 text-white text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs border border-white/20">
+                    <Sparkles className="w-3 h-3 text-amber-300" />
+                    {pick(currentBanner.badge, lang)}
+                  </span>
+                  <span className="text-[11px] text-white/80 font-medium tracking-wide">
+                    {pick(currentBanner.location, lang)}
+                  </span>
+                </div>
+
+                <h1 className="font-display text-lg sm:text-2xl font-bold tracking-tight text-white line-clamp-2">
+                  {pick(currentBanner.title, lang)}
+                </h1>
+
+                <p className="text-xs text-white/80 mt-1 line-clamp-2 leading-relaxed">
+                  {pick(currentBanner.subtitle, lang)}
+                </p>
+              </div>
+
+              {/* Bottom CTA / Action inside banner */}
+              <div className="pt-3 flex items-center justify-between">
+                {currentBanner.categoryTarget ? (
+                  <button
+                    onClick={() => scrollToCategory(currentBanner.categoryTarget!)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider transition-colors border border-white/30"
+                  >
+                    <span>{lang === "pt" ? "Ver Pratos" : "Explore Dishes"}</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {/* Admin Banner Trigger */}
+                <button
+                  onClick={() => setIsBannerAdminOpen(true)}
+                  className="inline-flex items-center gap-1 text-[11px] text-white/70 hover:text-white bg-black/40 hover:bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-xs transition-colors"
+                >
+                  <Edit3 className="w-3 h-3 text-amber-300" />
+                  <span>Admin Banners</span>
+                </button>
+              </div>
             </div>
-            <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-white">
-              {lang === "pt"
-                ? "Frutos do Mar Frescos & Drinks Autorais"
-                : "Fresh Seafood & Signature Drinks"}
-            </h1>
-            <p className="text-xs text-white/75 mt-1 line-clamp-2">
-              {lang === "pt"
-                ? "Desfrute do melhor da culinária baiana à beira do Rio Carapitangui. Peça diretamente pela sua mesa."
-                : "Enjoy authentic Bahian cuisine beside Rio Carapitangui. Order directly from your table."}
-            </p>
+
+            {/* Carousel Navigation Arrows & Dots */}
+            {activeBanners.length > 1 && (
+              <>
+                <button
+                  onClick={() =>
+                    setCurrentBannerIndex(
+                      (prev) => (prev - 1 + activeBanners.length) % activeBanners.length
+                    )
+                  }
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() =>
+                    setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length)
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-black/40 hover:bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                {/* Pagination Dots */}
+                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-full backdrop-blur-xs">
+                  {activeBanners.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentBannerIndex(idx)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        currentBannerIndex === idx ? "w-5 bg-[#BC6C25]" : "w-1.5 bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-          {/* Subtle background glow effect */}
-          <div className="absolute -right-12 -bottom-12 w-48 h-48 bg-[#BC6C25]/30 rounded-full blur-2xl pointer-events-none" />
         </div>
-      </div>
+      )}
 
       {/* ================= MAIN MENU SECTIONS & DISH CARDS ================= */}
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-10">
         {filteredCategories.length === 0 ? (
-          <div className="py-20 text-center bg-white rounded-3xl border border-[#E5DFD3] p-8 shadow-sm">
+          <div className="py-20 text-center bg-white rounded-3xl border border-[#E5DFD3] p-8 shadow-xs">
             <UtensilsCrossed className="w-12 h-12 text-[#A8A294] mx-auto mb-3" />
             <h3 className="font-display text-lg font-bold text-[#1A2B2A]">
               {lang === "pt" ? "Nenhum prato encontrado" : "No dishes found"}
@@ -645,8 +898,11 @@ export default function LiveMenu() {
           filteredCategories.map((category) => (
             <section
               key={category.key}
-              ref={(el) => (categoryRefs.current[category.key] = el)}
-              className="scroll-mt-40 space-y-4"
+              id={`section-${category.key}`}
+              ref={(el) => {
+                categoryRefs.current[category.key] = el;
+              }}
+              className="scroll-mt-44 space-y-4"
             >
               {/* Category Header (LiveMenu Style) */}
               <div className="flex items-baseline justify-between border-b-2 border-[#1A2B2A]/10 pb-2">
@@ -1041,7 +1297,7 @@ export default function LiveMenu() {
               </span>
             </div>
 
-            {/* Actions: Proceed to Checkout or WhatsApp Order */}
+            {/* Actions: Proceed to Checkout */}
             <div className="pt-2 flex flex-col sm:flex-row gap-2">
               <Button
                 onClick={() => {
@@ -1054,6 +1310,200 @@ export default function LiveMenu() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= ADMIN BANNER MANAGEMENT MODAL ================= */}
+      <Dialog open={isBannerAdminOpen} onOpenChange={setIsBannerAdminOpen}>
+        <DialogContent className="max-w-lg rounded-3xl bg-white border border-[#E5DFD3] p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display font-bold text-lg text-[#1A2B2A] flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-[#BC6C25]" />
+                {lang === "pt" ? "Gerenciar Banners do Cardápio" : "Manage Menu Banners"}
+              </span>
+              <button
+                onClick={handleResetBanners}
+                title={lang === "pt" ? "Restaurar padrão" : "Reset default"}
+                className="text-xs text-[#A8A294] hover:text-rose-600 flex items-center gap-1"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                {lang === "pt" ? "Padrão" : "Reset"}
+              </button>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#7A7568]">
+              {lang === "pt"
+                ? "Ative, desative ou edite os textos e fotos dos destaques principais."
+                : "Enable, disable or customize highlight banners and photos."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {editingBanner ? (
+            /* Editing single banner form */
+            <div className="space-y-3.5 py-2">
+              <div className="p-3 bg-[#FAF8F3] rounded-2xl border border-[#EDE7DB] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1A2B2A]">
+                    {lang === "pt" ? "Editar Banner" : "Edit Banner"}
+                  </span>
+                  <label className="flex items-center gap-1.5 text-xs cursor-pointer font-medium">
+                    <input
+                      type="checkbox"
+                      checked={editingBanner.isActive}
+                      onChange={(e) =>
+                        setEditingBanner({ ...editingBanner, isActive: e.target.checked })
+                      }
+                      className="rounded text-[#BC6C25]"
+                    />
+                    {lang === "pt" ? "Ativo no Carrossel" : "Active"}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-[#1A2B2A]">
+                    {lang === "pt" ? "Título (PT)" : "Title (PT)"}
+                  </label>
+                  <Input
+                    value={editingBanner.title.pt}
+                    onChange={(e) =>
+                      setEditingBanner({
+                        ...editingBanner,
+                        title: { ...editingBanner.title, pt: e.target.value },
+                      })
+                    }
+                    className="text-xs rounded-xl bg-white border-[#E0D8C8]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-[#1A2B2A]">
+                    {lang === "pt" ? "Subtítulo / Descrição (PT)" : "Subtitle (PT)"}
+                  </label>
+                  <Textarea
+                    value={editingBanner.subtitle.pt}
+                    onChange={(e) =>
+                      setEditingBanner({
+                        ...editingBanner,
+                        subtitle: { ...editingBanner.subtitle, pt: e.target.value },
+                      })
+                    }
+                    rows={2}
+                    className="text-xs rounded-xl bg-white border-[#E0D8C8]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[11px] font-bold text-[#1A2B2A]">Badge / Tag (PT)</label>
+                    <Input
+                      value={editingBanner.badge.pt}
+                      onChange={(e) =>
+                        setEditingBanner({
+                          ...editingBanner,
+                          badge: { ...editingBanner.badge, pt: e.target.value },
+                        })
+                      }
+                      className="text-xs rounded-xl bg-white border-[#E0D8C8]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-[#1A2B2A]">
+                      {lang === "pt" ? "Categoria Alvo" : "Category Target"}
+                    </label>
+                    <select
+                      value={editingBanner.categoryTarget || ""}
+                      onChange={(e) =>
+                        setEditingBanner({
+                          ...editingBanner,
+                          categoryTarget: e.target.value,
+                        })
+                      }
+                      className="w-full text-xs rounded-xl bg-white border border-[#E0D8C8] p-2"
+                    >
+                      <option value="">Nenhuma</option>
+                      {menu.map((cat) => (
+                        <option key={cat.key} value={cat.key}>
+                          {cat.name.pt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingBanner(null)}
+                  className="flex-1 rounded-xl text-xs"
+                >
+                  {lang === "pt" ? "Cancelar" : "Cancel"}
+                </Button>
+                <Button
+                  onClick={() => handleSaveBanner(editingBanner)}
+                  className="flex-1 bg-[#BC6C25] hover:bg-[#9E571C] text-white rounded-xl text-xs font-bold"
+                >
+                  <Save className="w-3.5 h-3.5 mr-1" />
+                  {lang === "pt" ? "Salvar Alterações" : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            /* Banner list */
+            <div className="space-y-3 py-2">
+              {banners.map((banner, index) => (
+                <div
+                  key={banner.id}
+                  className="p-3 bg-[#FAF8F3] rounded-2xl border border-[#EDE7DB] flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={getImageUrl(banner.image)}
+                      alt={banner.title.pt}
+                      className="w-14 h-14 rounded-xl object-cover border border-[#D9D2C2]"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge
+                          variant={banner.isActive ? "default" : "secondary"}
+                          className={`text-[9px] px-1.5 py-0 ${
+                            banner.isActive ? "bg-emerald-600 text-white" : "bg-gray-300 text-gray-700"
+                          }`}
+                        >
+                          {banner.isActive ? "Ativo" : "Inativo"}
+                        </Badge>
+                        <span className="text-[10px] text-[#A8A294] font-medium">
+                          #{index + 1} • {banner.badge.pt}
+                        </span>
+                      </div>
+                      <h4 className="font-display font-bold text-xs text-[#1A2B2A] mt-0.5 line-clamp-1">
+                        {banner.title.pt}
+                      </h4>
+                      <p className="text-[11px] text-[#7A7568] line-clamp-1">
+                        {banner.subtitle.pt}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingBanner(banner)}
+                    className="rounded-xl text-xs font-bold border-[#D9D2C2] hover:bg-white"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ))}
+
+              <Button
+                onClick={() => setIsBannerAdminOpen(false)}
+                className="w-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white rounded-xl text-xs font-bold"
+              >
+                {lang === "pt" ? "Concluir" : "Done"}
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
