@@ -14,6 +14,7 @@ export function Header() {
   const links = [
     { to: "/", label: t.nav.home },
     { to: "/menu", label: t.nav.menu },
+    { to: "/live-menu", label: "LiveMenu" },
   ] as const;
 
   return (

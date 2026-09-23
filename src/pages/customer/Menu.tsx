@@ -223,6 +223,25 @@ const Menu = () => {
       <Header />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
+        {/* Layout Switcher Banner */}
+        <div className="mb-6 flex items-center justify-between bg-white rounded-2xl p-3 border border-[#E5DFD3] shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#1A2B2A] uppercase tracking-wide">
+              {lang === "pt" ? "Visualização:" : "View Mode:"}
+            </span>
+            <span className="text-xs text-[#7A7568]">
+              {lang === "pt" ? "Modo Galeria (Foodporn)" : "Gallery Mode (Foodporn)"}
+            </span>
+          </div>
+          <button
+            onClick={() => navigate("/live-menu")}
+            className="px-3.5 py-1.5 rounded-xl bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs flex items-center gap-1.5"
+          >
+            <span>{lang === "pt" ? "Alternar para LiveMenu" : "Switch to LiveMenu"}</span>
+            <span className="text-[10px] bg-[#BC6C25] px-1.5 py-0.5 rounded-md">Tagme style</span>
+          </button>
+        </div>
+
         {/* Category Tabs */}
         <div className="mb-8 overflow-x-auto pb-2">
           <div className="flex gap-2 min-w-max">

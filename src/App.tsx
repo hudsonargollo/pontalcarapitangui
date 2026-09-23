@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // Lazy load customer pages
 const QRLanding = lazy(() => import("./pages/customer/QRLanding"));
 const Menu = lazy(() => import("./pages/customer/Menu"));
+const LiveMenu = lazy(() => import("./pages/customer/LiveMenu"));
 const Checkout = lazy(() => import("./pages/customer/Checkout"));
 const CheckoutLegacy = lazy(() => import("./pages/customer/CheckoutLegacy"));
 const Payment = lazy(() => import("./pages/customer/Payment"));
@@ -103,6 +104,21 @@ const App = () => {
           <Route path="/menu" element={
             <Suspense fallback={<LoadingFallback />}>
               <Menu />
+            </Suspense>
+          } />
+          <Route path="/live-menu" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LiveMenu />
+            </Suspense>
+          } />
+          <Route path="/cardapio" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LiveMenu />
+            </Suspense>
+          } />
+          <Route path="/menu-live" element={
+            <Suspense fallback={<LoadingFallback />}>
+              <LiveMenu />
             </Suspense>
           } />
           <Route path="/menu-debug" element={
