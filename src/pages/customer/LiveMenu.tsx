@@ -623,23 +623,39 @@ export default function LiveMenu() {
       {/* ================= STICKY TOP BRAND & ACTION BAR ================= */}
       <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E5DFD3] shadow-xs transition-all">
         {/* Main Header Container (Contained to max-w-5xl) */}
-        <div className="max-w-5xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            {/* Logo Image replacing text name */}
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2 text-left group transition-transform active:scale-95"
-              aria-label="Pontal Carapitangui — Início"
-            >
-              <img
-                src="/logo-pontal.webp"
-                alt="PONTAL Carapitangui"
-                className="h-9 sm:h-11 w-auto object-contain drop-shadow-xs"
-              />
-            </button>
+        <div className="max-w-5xl mx-auto px-4 py-2.5">
+          <div className="flex items-center justify-between gap-2.5">
+            {/* Left: Hamburger Menu Button + Logo */}
+            <div className="flex items-center gap-2.5">
+              {/* Category Hamburger Menu Button (Always available on sticky header) */}
+              <button
+                id="btn-header-categories"
+                onClick={() => setIsCategoryDrawerOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A2B2A] text-white hover:bg-[#2A3B3A] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs active:scale-95 shrink-0"
+                title={lang === "pt" ? "Ver todas as categorias" : "View all categories"}
+              >
+                <MenuIcon className="w-3.5 h-3.5" />
+                <span className="text-[11px] font-bold">
+                  {lang === "pt" ? "Categorias" : "Categories"}
+                </span>
+              </button>
 
-            {/* Top Actions (Language & Call Waiter - Vertically Aligned) */}
-            <div className="flex items-center gap-2">
+              {/* Logo Image */}
+              <button
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2 text-left group transition-transform active:scale-95 shrink-0"
+                aria-label="Pontal Carapitangui — Início"
+              >
+                <img
+                  src="/logo-pontal.webp"
+                  alt="PONTAL Carapitangui"
+                  className="h-8 sm:h-10 w-auto object-contain drop-shadow-xs"
+                />
+              </button>
+            </div>
+
+            {/* Right: Language Pill & Call Waiter */}
+            <div className="flex items-center gap-2 shrink-0">
               {/* Language Pill Switcher */}
               <div className="flex items-center h-8 bg-[#F2EEE4] p-0.5 rounded-full border border-[#D9D2C2]">
                 <button
@@ -664,7 +680,7 @@ export default function LiveMenu() {
                 </button>
               </div>
 
-              {/* Call Waiter Bell Button (Fixed Alignment) */}
+              {/* Call Waiter Bell Button */}
               <button
                 onClick={() => setIsWaiterModalOpen(true)}
                 title={lang === "pt" ? "Chamar Garçom" : "Call Waiter"}
@@ -676,7 +692,7 @@ export default function LiveMenu() {
           </div>
 
           {/* Search Bar Input */}
-          <div className="mt-2.5 relative">
+          <div className="mt-2 relative">
             <div className="relative flex items-center">
               <Search className="absolute left-3.5 w-4 h-4 text-[#A8A294]" />
               <input
@@ -688,7 +704,7 @@ export default function LiveMenu() {
                     ? "Buscar pratos, frutos do mar, drinks ou ingredientes..."
                     : "Search seafood, appetizers, drinks or ingredients..."
                 }
-                className="w-full pl-10 pr-9 py-2.5 rounded-2xl bg-[#F8F6F0] border border-[#E0D8C8] focus:border-[#BC6C25] focus:bg-white focus:outline-hidden text-sm text-[#1A2B2A] placeholder:text-[#A8A294] transition-all shadow-inner"
+                className="w-full pl-10 pr-9 py-2 rounded-2xl bg-[#F8F6F0] border border-[#E0D8C8] focus:border-[#BC6C25] focus:bg-white focus:outline-hidden text-xs sm:text-sm text-[#1A2B2A] placeholder:text-[#A8A294] transition-all shadow-inner"
               />
               {searchQuery && (
                 <button
@@ -702,43 +718,29 @@ export default function LiveMenu() {
           </div>
         </div>
 
-        {/* ================= CONTAINED CATEGORY BAR WITH HAMBURGER MENU ================= */}
+        {/* ================= CONTAINED HORIZONTAL CATEGORY TABS (SCROLLSPY) ================= */}
         <div className="border-t border-[#EDE7DB] bg-[#FFFFFF]">
-          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-2">
-            {/* Category Hamburger Menu Button */}
-            <button
-              id="btn-categories-drawer"
-              onClick={() => setIsCategoryDrawerOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A2B2A] text-white hover:bg-[#2A3B3A] text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-xs active:scale-95"
-              title={lang === "pt" ? "Ver todas as categorias" : "View all categories"}
-            >
-              <MenuIcon className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{lang === "pt" ? "Categorias" : "Categories"}</span>
-            </button>
-
-            {/* Horizontal Scrollable Tabs */}
-            <div
-              ref={tabsContainerRef}
-              className="overflow-x-auto no-scrollbar flex items-center gap-2 flex-1"
-            >
-              {menu.map((cat) => {
-                const isActive = activeCategory === cat.key;
-                return (
-                  <button
-                    key={cat.key}
-                    id={`tab-btn-${cat.key}`}
-                    onClick={() => scrollToCategory(cat.key)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
-                      isActive
-                        ? "bg-[#BC6C25] text-white shadow-xs scale-102"
-                        : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
-                    }`}
-                  >
-                    {pick(cat.name, lang)}
-                  </button>
-                );
-              })}
-            </div>
+          <div
+            ref={tabsContainerRef}
+            className="max-w-5xl mx-auto px-4 py-2 overflow-x-auto no-scrollbar flex items-center gap-2"
+          >
+            {menu.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              return (
+                <button
+                  key={cat.key}
+                  id={`tab-btn-${cat.key}`}
+                  onClick={() => scrollToCategory(cat.key)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
+                    isActive
+                      ? "bg-[#BC6C25] text-white shadow-xs scale-102"
+                      : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
+                  }`}
+                >
+                  {pick(cat.name, lang)}
+                </button>
+              );
+            })}
           </div>
         </div>
 
