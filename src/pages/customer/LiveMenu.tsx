@@ -827,9 +827,9 @@ export default function LiveMenu() {
                   <div />
                 )}
 
-                {/* Micro Pagination Dots (Cleanly positioned away from text) */}
+                {/* Micro Pagination Dots (Hidden on mobile) */}
                 {activeBanners.length > 1 && (
-                  <div className="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-xs">
+                  <div className="hidden md:flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-xs">
                     {activeBanners.map((_, idx) => (
                       <button
                         key={idx}
