@@ -21,9 +21,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLangState(saved);
         return;
       }
-      const browser = navigator.language.toLowerCase();
-      if (browser.startsWith("pt")) setLangState("pt");
-      else setLangState("en");
+      setLangState("pt");
     } catch {
       // ignore
     }

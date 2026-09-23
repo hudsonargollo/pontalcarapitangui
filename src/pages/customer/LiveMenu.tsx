@@ -638,13 +638,13 @@ export default function LiveMenu() {
               />
             </button>
 
-            {/* Top Actions (Language & Call Waiter - Table Selector Hidden) */}
+            {/* Top Actions (Language & Call Waiter - Vertically Aligned) */}
             <div className="flex items-center gap-2">
               {/* Language Pill Switcher */}
-              <div className="flex items-center bg-[#F2EEE4] p-0.5 rounded-full border border-[#D9D2C2]">
+              <div className="flex items-center h-8 bg-[#F2EEE4] p-0.5 rounded-full border border-[#D9D2C2]">
                 <button
                   onClick={() => setLang("pt")}
-                  className={`px-2 py-1 text-[11px] font-bold rounded-full transition-all ${
+                  className={`h-full px-2.5 flex items-center justify-center text-[11px] font-bold rounded-full transition-all ${
                     lang === "pt"
                       ? "bg-[#BC6C25] text-white shadow-xs"
                       : "text-[#1A2B2A]/60 hover:text-[#1A2B2A]"
@@ -654,7 +654,7 @@ export default function LiveMenu() {
                 </button>
                 <button
                   onClick={() => setLang("en")}
-                  className={`px-2 py-1 text-[11px] font-bold rounded-full transition-all ${
+                  className={`h-full px-2.5 flex items-center justify-center text-[11px] font-bold rounded-full transition-all ${
                     lang === "en"
                       ? "bg-[#BC6C25] text-white shadow-xs"
                       : "text-[#1A2B2A]/60 hover:text-[#1A2B2A]"
@@ -664,11 +664,11 @@ export default function LiveMenu() {
                 </button>
               </div>
 
-              {/* Call Waiter Bell Button */}
+              {/* Call Waiter Bell Button (Fixed Alignment) */}
               <button
                 onClick={() => setIsWaiterModalOpen(true)}
                 title={lang === "pt" ? "Chamar Garçom" : "Call Waiter"}
-                className="p-2 rounded-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white transition-colors shadow-xs active:scale-90"
+                className="h-8 w-8 flex items-center justify-center rounded-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white transition-colors shadow-xs active:scale-90 shrink-0"
               >
                 <BellRing className="w-4 h-4 text-amber-300" />
               </button>
@@ -1081,7 +1081,7 @@ export default function LiveMenu() {
                         </div>
                       </div>
 
-                      {/* Right: Dish Image + Quick Action Button */}
+                      {/* Right: Dish Image (Click opens detail) */}
                       <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-xl overflow-hidden bg-[#1A2B2A]/5 shrink-0">
                         <img
                           src={getImageUrl(item.image)}
@@ -1101,15 +1101,6 @@ export default function LiveMenu() {
                             }`}
                           />
                         </button>
-
-                        {/* Quick Add Button (+) */}
-                        <button
-                          onClick={(e) => handleQuickAdd(e, item)}
-                          title={lang === "pt" ? "Adicionar rápido" : "Quick Add"}
-                          className="absolute bottom-1.5 right-1.5 p-2 rounded-xl bg-[#BC6C25] hover:bg-[#9E571C] text-white shadow-md active:scale-90 transition-transform"
-                        >
-                          <Plus className="w-4 h-4 font-bold" />
-                        </button>
                       </div>
                     </div>
                   );
@@ -1122,11 +1113,11 @@ export default function LiveMenu() {
 
       {/* ================= ITEM DETAIL DIALOG / MODAL (LIVEMENU STYLE) ================= */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl bg-white border border-[#E5DFD3] shadow-2xl">
+        <DialogContent className="w-[94vw] sm:max-w-lg p-0 overflow-hidden rounded-3xl bg-white border border-[#E5DFD3] shadow-2xl max-h-[88vh] flex flex-col my-auto">
           {selectedItem && (
-            <div>
+            <div className="flex flex-col h-full overflow-hidden">
               {/* Modal Image Hero */}
-              <div className="relative aspect-4/3 w-full bg-[#1A2B2A] overflow-hidden">
+              <div className="relative aspect-16/10 sm:aspect-16/9 w-full bg-[#1A2B2A] overflow-hidden shrink-0">
                 <img
                   src={getImageUrl(selectedItem.image)}
                   alt={selectedItem.name[lang]}
@@ -1134,17 +1125,17 @@ export default function LiveMenu() {
                 />
                 <button
                   onClick={() => setSelectedItem(null)}
-                  className="absolute top-3 left-3 p-2 rounded-full bg-black/50 hover:bg-black/75 text-white backdrop-blur-md transition-colors"
+                  className="absolute top-3 left-3 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-[#BC6C25] text-white font-display font-black text-sm shadow-md">
+                <div className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-full bg-[#BC6C25] text-white font-display font-black text-sm shadow-md">
                   {selectedItem.price}
                 </div>
               </div>
 
-              {/* Modal Body */}
-              <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Modal Body (Scrollable) */}
+              <div className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
                   {selectedItem.tags && selectedItem.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
@@ -1159,11 +1150,11 @@ export default function LiveMenu() {
                       ))}
                     </div>
                   )}
-                  <h2 className="font-display font-bold text-xl text-[#1A2B2A]">
+                  <h2 className="font-display font-bold text-xl sm:text-2xl text-[#1A2B2A]">
                     {selectedItem.name[lang]}
                   </h2>
                   {selectedItem.description && (
-                    <p className="text-sm text-[#7A7568] mt-1.5 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#7A7568] mt-1.5 leading-relaxed">
                       {pick(selectedItem.description, lang)}
                     </p>
                   )}
@@ -1189,39 +1180,39 @@ export default function LiveMenu() {
                     rows={2}
                   />
                 </div>
+              </div>
 
-                {/* Stepper Quantity + Add Button */}
-                <div className="pt-3 border-t border-[#EDE7DB] flex items-center gap-3">
-                  {/* Quantity Stepper */}
-                  <div className="flex items-center border border-[#D9D2C2] rounded-2xl bg-[#F8F6F0] p-1">
-                    <button
-                      onClick={() => setItemQuantity((q) => Math.max(1, q - 1))}
-                      className="p-2 rounded-xl hover:bg-[#EAE4D6] text-[#1A2B2A] transition-colors"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center font-display font-bold text-sm text-[#1A2B2A]">
-                      {itemQuantity}
-                    </span>
-                    <button
-                      onClick={() => setItemQuantity((q) => q + 1)}
-                      className="p-2 rounded-xl hover:bg-[#EAE4D6] text-[#1A2B2A] transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Add to Comanda CTA */}
-                  <Button
-                    onClick={handleAddDetailToCart}
-                    className="flex-1 py-6 bg-[#BC6C25] hover:bg-[#9E571C] text-white font-display font-bold text-sm uppercase tracking-wider rounded-2xl shadow-lg transition-all"
+              {/* Modal Footer (Sticky Stepper + Add Button) */}
+              <div className="p-4 bg-[#FAF8F3] border-t border-[#EDE7DB] flex items-center gap-3 shrink-0">
+                {/* Quantity Stepper */}
+                <div className="flex items-center border border-[#D9D2C2] rounded-2xl bg-[#FFFFFF] p-1 shadow-xs">
+                  <button
+                    onClick={() => setItemQuantity((q) => Math.max(1, q - 1))}
+                    className="p-2 rounded-xl hover:bg-[#EAE4D6] text-[#1A2B2A] transition-colors"
                   >
-                    <span>
-                      {lang === "pt" ? "Adicionar à Comanda" : "Add to Order"} • R${" "}
-                      {(selectedItem.unitPriceNum * itemQuantity).toFixed(2).replace(".", ",")}
-                    </span>
-                  </Button>
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-8 text-center font-display font-bold text-sm text-[#1A2B2A]">
+                    {itemQuantity}
+                  </span>
+                  <button
+                    onClick={() => setItemQuantity((q) => q + 1)}
+                    className="p-2 rounded-xl hover:bg-[#EAE4D6] text-[#1A2B2A] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
+
+                {/* Add to Comanda CTA */}
+                <Button
+                  onClick={handleAddDetailToCart}
+                  className="flex-1 py-5 bg-[#BC6C25] hover:bg-[#9E571C] text-white font-display font-bold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all"
+                >
+                  <span>
+                    {lang === "pt" ? "Adicionar à Comanda" : "Add to Order"} • R${" "}
+                    {(selectedItem.unitPriceNum * itemQuantity).toFixed(2).replace(".", ",")}
+                  </span>
+                </Button>
               </div>
             </div>
           )}
