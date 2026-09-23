@@ -16,6 +16,8 @@ import {
   Edit3,
   Save,
   RotateCcw,
+  Menu as MenuIcon,
+  LayoutGrid,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useCart } from "@/lib/cartContext";
@@ -119,6 +121,21 @@ function getImageUrl(imagePath?: string) {
   const filename = imagePath.split("/").pop() || "";
   return imageMap[filename] || imagePath;
 }
+
+// Category icons map
+const categoryIcons: Record<string, string> = {
+  frios: "🧊",
+  petiscos: "🍤",
+  especial: "👑",
+  kids: "🧒",
+  sobremesas: "🥥",
+  "drinks-autorais": "🍸",
+  "drinks-classicos": "🍹",
+  "drinks-experiencia": "🌊",
+  "ice-drinks": "❄️",
+  cervejas: "🍺",
+  "sem-alcool": "🥤",
+};
 
 // Banner Type & Defaults
 export interface PromoBanner {
@@ -224,13 +241,13 @@ export default function LiveMenu() {
     return getCurrentTableId() || "12";
   });
 
-  const [tableModalOpen, setTableModalOpen] = useState(false);
-  const [tempTableInput, setTempTableInput] = useState(tableNumber);
-
   // Search & Active Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [activeCategory, setActiveCategory] = useState<string>(menu[0]?.key || "frios");
+
+  // Category Drawer State (Hamburger Menu)
+  const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
 
   // Banners State & Carousel
   const [banners, setBanners] = useState<PromoBanner[]>(() => {
@@ -286,7 +303,7 @@ export default function LiveMenu() {
     if (activeBanners.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
-    }, 5500);
+    }, 6000);
     return () => clearInterval(timer);
   }, [activeBanners.length]);
 
@@ -450,6 +467,7 @@ export default function LiveMenu() {
     }
 
     setActiveCategory(key);
+    setIsCategoryDrawerOpen(false);
     isProgrammaticScroll.current = true;
 
     // Center tab button immediately
@@ -543,19 +561,6 @@ export default function LiveMenu() {
   const tipAmount = includeTip ? subtotalPrice * 0.1 : 0;
   const grandTotal = subtotalPrice + tipAmount;
 
-  const handleSaveTable = () => {
-    if (tempTableInput.trim()) {
-      setTableNumber(tempTableInput.trim());
-      setCurrentTableId(tempTableInput.trim());
-      setTableModalOpen(false);
-      toast.success(
-        lang === "pt"
-          ? `Mesa atualizada para ${formatTableDisplay(tempTableInput)}`
-          : `Table updated to ${formatTableDisplay(tempTableInput)}`
-      );
-    }
-  };
-
   const handleCallWaiterSubmit = () => {
     const reasonsMap: Record<string, string> = {
       atendimento: "Chamar Garçom na Mesa",
@@ -578,8 +583,8 @@ export default function LiveMenu() {
 
     toast.success(
       lang === "pt"
-        ? `Garçom acionado para a ${formatTableDisplay(tableNumber)}!`
-        : `Waiter notified for ${formatTableDisplay(tableNumber)}!`,
+        ? `Garçom acionado para atendimento!`
+        : `Waiter notified for assistance!`,
       { icon: <BellRing className="w-4 h-4 text-[#BC6C25]" /> }
     );
     setIsWaiterModalOpen(false);
@@ -633,20 +638,8 @@ export default function LiveMenu() {
               />
             </button>
 
-            {/* Table Badge & Top Actions */}
+            {/* Top Actions (Language & Call Waiter - Table Selector Hidden) */}
             <div className="flex items-center gap-2">
-              {/* Table Button */}
-              <button
-                onClick={() => {
-                  setTempTableInput(tableNumber);
-                  setTableModalOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F2EEE4] hover:bg-[#EAE4D6] border border-[#D9D2C2] text-xs font-bold text-[#1A2B2A] transition-colors shadow-xs"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>{formatTableDisplay(tableNumber)}</span>
-              </button>
-
               {/* Language Pill Switcher */}
               <div className="flex items-center bg-[#F2EEE4] p-0.5 rounded-full border border-[#D9D2C2]">
                 <button
@@ -709,29 +702,43 @@ export default function LiveMenu() {
           </div>
         </div>
 
-        {/* ================= CONTAINED HORIZONTAL CATEGORY TABS (SCROLLSPY) ================= */}
+        {/* ================= CONTAINED CATEGORY BAR WITH HAMBURGER MENU ================= */}
         <div className="border-t border-[#EDE7DB] bg-[#FFFFFF]">
-          <div
-            ref={tabsContainerRef}
-            className="max-w-5xl mx-auto px-4 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-2"
-          >
-            {menu.map((cat) => {
-              const isActive = activeCategory === cat.key;
-              return (
-                <button
-                  key={cat.key}
-                  id={`tab-btn-${cat.key}`}
-                  onClick={() => scrollToCategory(cat.key)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
-                    isActive
-                      ? "bg-[#1A2B2A] text-white shadow-md scale-102"
-                      : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
-                  }`}
-                >
-                  {pick(cat.name, lang)}
-                </button>
-              );
-            })}
+          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-2">
+            {/* Category Hamburger Menu Button */}
+            <button
+              id="btn-categories-drawer"
+              onClick={() => setIsCategoryDrawerOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A2B2A] text-white hover:bg-[#2A3B3A] text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-xs active:scale-95"
+              title={lang === "pt" ? "Ver todas as categorias" : "View all categories"}
+            >
+              <MenuIcon className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{lang === "pt" ? "Categorias" : "Categories"}</span>
+            </button>
+
+            {/* Horizontal Scrollable Tabs */}
+            <div
+              ref={tabsContainerRef}
+              className="overflow-x-auto no-scrollbar flex items-center gap-2 flex-1"
+            >
+              {menu.map((cat) => {
+                const isActive = activeCategory === cat.key;
+                return (
+                  <button
+                    key={cat.key}
+                    id={`tab-btn-${cat.key}`}
+                    onClick={() => scrollToCategory(cat.key)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
+                      isActive
+                        ? "bg-[#BC6C25] text-white shadow-xs scale-102"
+                        : "bg-[#F4F0E6] text-[#1A2B2A]/75 hover:bg-[#EBE5D8] hover:text-[#1A2B2A] border border-[#E0D8C8]"
+                    }`}
+                  >
+                    {pick(cat.name, lang)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -746,8 +753,8 @@ export default function LiveMenu() {
                   onClick={() => setActiveFilter(chip.id)}
                   className={`flex items-center gap-1 px-3 py-1 rounded-xl text-[11px] font-semibold whitespace-nowrap transition-colors shrink-0 ${
                     isSelected
-                      ? "bg-[#BC6C25] text-white shadow-xs"
-                      : "bg-white text-[#1A2B2A]/80 hover:bg-[#F2EEE4] border border-[#E2DC CE]"
+                      ? "bg-[#1A2B2A] text-white shadow-xs"
+                      : "bg-white text-[#1A2B2A]/80 hover:bg-[#F2EEE4] border border-[#E2DCCE]"
                   }`}
                 >
                   {chip.icon && <span>{chip.icon}</span>}
@@ -759,7 +766,7 @@ export default function LiveMenu() {
         </div>
       </header>
 
-      {/* ================= MULTI-BANNER SPOTLIGHT CAROUSEL WITH IMAGE BACKGROUNDS ================= */}
+      {/* ================= MULTI-BANNER SPOTLIGHT CAROUSEL ================= */}
       {activeBanners.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
           <div className="relative overflow-hidden rounded-3xl min-h-[160px] sm:min-h-[190px] shadow-lg border border-[#D9D2C2]/60 group">
@@ -788,7 +795,7 @@ export default function LiveMenu() {
             <div className="relative z-10 p-5 sm:p-6 text-white max-w-lg flex flex-col justify-between min-h-[160px] sm:min-h-[190px]">
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#BC6C25]/80 text-white text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs border border-white/20">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#BC6C25]/90 text-white text-[10px] font-bold uppercase tracking-wider backdrop-blur-xs border border-white/20">
                     <Sparkles className="w-3 h-3 text-amber-300" />
                     {pick(currentBanner.badge, lang)}
                   </span>
@@ -807,7 +814,7 @@ export default function LiveMenu() {
               </div>
 
               {/* Bottom CTA / Action inside banner */}
-              <div className="pt-3 flex items-center justify-between">
+              <div className="pt-3 flex items-center justify-between gap-2">
                 {currentBanner.categoryTarget ? (
                   <button
                     onClick={() => scrollToCategory(currentBanner.categoryTarget!)}
@@ -820,18 +827,33 @@ export default function LiveMenu() {
                   <div />
                 )}
 
+                {/* Micro Pagination Dots (Cleanly positioned away from text) */}
+                {activeBanners.length > 1 && (
+                  <div className="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-xs">
+                    {activeBanners.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentBannerIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          currentBannerIndex === idx ? "w-4 bg-[#BC6C25]" : "w-1.5 bg-white/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {/* Admin Banner Trigger */}
                 <button
                   onClick={() => setIsBannerAdminOpen(true)}
                   className="inline-flex items-center gap-1 text-[11px] text-white/70 hover:text-white bg-black/40 hover:bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-xs transition-colors"
                 >
                   <Edit3 className="w-3 h-3 text-amber-300" />
-                  <span>Admin Banners</span>
+                  <span className="hidden xs:inline">Admin</span>
                 </button>
               </div>
             </div>
 
-            {/* Carousel Navigation Arrows & Dots */}
+            {/* Carousel Navigation Arrows */}
             {activeBanners.length > 1 && (
               <>
                 <button
@@ -852,24 +874,70 @@ export default function LiveMenu() {
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
-
-                {/* Pagination Dots */}
-                <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-full backdrop-blur-xs">
-                  {activeBanners.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentBannerIndex(idx)}
-                      className={`h-1.5 rounded-full transition-all ${
-                        currentBannerIndex === idx ? "w-5 bg-[#BC6C25]" : "w-1.5 bg-white/50"
-                      }`}
-                    />
-                  ))}
-                </div>
               </>
             )}
           </div>
         </div>
       )}
+
+      {/* ================= CATEGORIES HAMBURGER DRAWER DIALOG ================= */}
+      <Dialog open={isCategoryDrawerOpen} onOpenChange={setIsCategoryDrawerOpen}>
+        <DialogContent className="max-w-md rounded-3xl bg-white border border-[#E5DFD3] p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display font-bold text-lg text-[#1A2B2A] flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <LayoutGrid className="w-5 h-5 text-[#BC6C25]" />
+                {lang === "pt" ? "Todas as Categorias" : "All Categories"}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-[#7A7568]">
+              {lang === "pt"
+                ? "Navegue rapidamente para qualquer seção do cardápio."
+                : "Jump directly to any section of the menu."}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 py-3">
+            {menu.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              const icon = categoryIcons[cat.key] || "🍽️";
+
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => scrollToCategory(cat.key)}
+                  className={`p-3 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 ${
+                    isActive
+                      ? "bg-[#1A2B2A] text-white border-[#1A2B2A] shadow-sm"
+                      : "bg-[#FAF8F3] hover:bg-[#F2EEE4] text-[#1A2B2A] border-[#E8E2D5]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">{icon}</span>
+                    <div>
+                      <div className="font-display font-bold text-xs uppercase tracking-wide">
+                        {pick(cat.name, lang)}
+                      </div>
+                      <div
+                        className={`text-[10px] ${
+                          isActive ? "text-white/70" : "text-[#A8A294]"
+                        }`}
+                      >
+                        {cat.items.length} {lang === "pt" ? "itens" : "items"}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    className={`w-4 h-4 ${
+                      isActive ? "text-amber-300" : "text-[#A8A294]"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ================= MAIN MENU SECTIONS & DISH CARDS ================= */}
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-10">
@@ -908,6 +976,7 @@ export default function LiveMenu() {
               <div className="flex items-baseline justify-between border-b-2 border-[#1A2B2A]/10 pb-2">
                 <div>
                   <h2 className="font-display text-xl font-bold uppercase tracking-tight text-[#1A2B2A] flex items-center gap-2">
+                    <span>{categoryIcons[category.key] || "🍽️"}</span>
                     <span>{pick(category.name, lang)}</span>
                     <Badge variant="secondary" className="bg-[#EAE4D6] text-[#1A2B2A] font-bold text-xs">
                       {category.items.length}
@@ -1170,7 +1239,7 @@ export default function LiveMenu() {
             className="fixed bottom-4 inset-x-0 z-40 px-4 pointer-events-none"
           >
             <div className="max-w-xl mx-auto pointer-events-auto bg-[#1A2B2A] text-white rounded-3xl p-3 shadow-2xl border border-white/10 flex items-center justify-between gap-3">
-              {/* Cart Summary Icon & Table */}
+              {/* Cart Summary Icon */}
               <button
                 onClick={() => setIsComandaOpen(true)}
                 className="flex items-center gap-3 pl-2 text-left group"
@@ -1183,7 +1252,7 @@ export default function LiveMenu() {
                 </div>
                 <div>
                   <div className="text-[11px] font-medium text-white/70">
-                    {formatTableDisplay(tableNumber)} • {totalItemsCount} {totalItemsCount === 1 ? "item" : "itens"}
+                    {totalItemsCount} {totalItemsCount === 1 ? "item" : "itens"}
                   </div>
                   <div className="font-display font-black text-lg text-white">
                     R$ {subtotalPrice.toFixed(2).replace(".", ",")}
@@ -1211,14 +1280,9 @@ export default function LiveMenu() {
         <DialogContent className="max-w-lg p-0 overflow-hidden rounded-3xl bg-white border border-[#E5DFD3] shadow-2xl">
           <div className="p-5 border-b border-[#EDE7DB] flex items-center justify-between bg-[#FAF8F3]">
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-display font-bold text-lg text-[#1A2B2A]">
-                  {lang === "pt" ? "Comanda da Mesa" : "Table Order"}
-                </h3>
-                <Badge variant="outline" className="bg-white border-[#D9D2C2] text-[#1A2B2A] font-bold text-xs">
-                  {formatTableDisplay(tableNumber)}
-                </Badge>
-              </div>
+              <h3 className="font-display font-bold text-lg text-[#1A2B2A]">
+                {lang === "pt" ? "Comanda de Pedidos" : "Table Order"}
+              </h3>
               <p className="text-xs text-[#7A7568] mt-0.5">
                 {lang === "pt"
                   ? "Revise seus pratos antes de confirmar o pedido."
@@ -1507,48 +1571,6 @@ export default function LiveMenu() {
         </DialogContent>
       </Dialog>
 
-      {/* ================= TABLE NUMBER EDIT MODAL ================= */}
-      <Dialog open={tableModalOpen} onOpenChange={setTableModalOpen}>
-        <DialogContent className="max-w-xs rounded-3xl bg-white border border-[#E5DFD3] p-5 shadow-2xl">
-          <DialogHeader>
-            <DialogTitle className="font-display font-bold text-base text-[#1A2B2A]">
-              {lang === "pt" ? "Identificar sua Mesa" : "Identify your Table"}
-            </DialogTitle>
-            <DialogDescription className="text-xs text-[#7A7568]">
-              {lang === "pt"
-                ? "Digite o número ou identificador da sua mesa no quiosque / praia."
-                : "Enter your beach kiosk table number."}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-3">
-            <Input
-              type="text"
-              value={tempTableInput}
-              onChange={(e) => setTempTableInput(e.target.value)}
-              placeholder="Ex: 12, Praia 4, Bangalô 2"
-              className="text-center font-display font-bold text-lg rounded-2xl bg-[#F8F6F0] border-[#D9D2C2]"
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setTableModalOpen(false)}
-              className="flex-1 rounded-xl text-xs"
-            >
-              {lang === "pt" ? "Cancelar" : "Cancel"}
-            </Button>
-            <Button
-              onClick={handleSaveTable}
-              className="flex-1 bg-[#BC6C25] hover:bg-[#9E571C] text-white rounded-xl text-xs font-bold"
-            >
-              {lang === "pt" ? "Confirmar" : "Confirm"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* ================= CALL WAITER / BILL MODAL ================= */}
       <Dialog open={isWaiterModalOpen} onOpenChange={setIsWaiterModalOpen}>
         <DialogContent className="max-w-sm rounded-3xl bg-white border border-[#E5DFD3] p-5 shadow-2xl">
@@ -1559,8 +1581,8 @@ export default function LiveMenu() {
             </DialogTitle>
             <DialogDescription className="text-xs text-[#7A7568]">
               {lang === "pt"
-                ? `Notificar garçom para a ${formatTableDisplay(tableNumber)}.`
-                : `Notify waiter for ${formatTableDisplay(tableNumber)}.`}
+                ? `Notificar garçom para atendimento.`
+                : `Notify waiter for assistance.`}
             </DialogDescription>
           </DialogHeader>
 
