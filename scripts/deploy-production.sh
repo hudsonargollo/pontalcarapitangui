@@ -106,7 +106,7 @@ read -r response
 
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "Deploying..."
-    wrangler pages deploy dist --project-name=pontalcarapitangui --branch=main
+    wrangler pages deploy dist --project-name=mimenu --branch=main
     
     echo ""
     echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
