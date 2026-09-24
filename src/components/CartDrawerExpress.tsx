@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/lib/cartContext';
 import { useMimenu } from '@/lib/mimenuContext';
+import { GoogleReviewHunterModal } from '@/components/GoogleReviewHunterModal';
 import { toast } from 'sonner';
 
 interface CartDrawerExpressProps {
@@ -47,6 +48,7 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
   const [selectedTip, setSelectedTip] = useState<number>(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<any | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const subtotal = getTotalPrice();
   const grandTotal = subtotal + selectedTip;
@@ -194,6 +196,14 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
+                <Button
+                  onClick={() => setIsReviewModalOpen(true)}
+                  className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black text-xs h-11 rounded-xl shadow-md flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-yellow-200" />
+                  <span>⭐ Calificar Experiencia en Google (5★)</span>
+                </Button>
+
                 <Button
                   onClick={handleShareWhatsApp}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl shadow-md flex items-center justify-center gap-2"
@@ -448,6 +458,14 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
           )}
         </div>
       </DialogContent>
+
+      {/* Google Review Hunter Modal */}
+      <GoogleReviewHunterModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        defaultCustomerName={customerName}
+        orderId={confirmedOrder?.id}
+      />
     </Dialog>
   );
 };

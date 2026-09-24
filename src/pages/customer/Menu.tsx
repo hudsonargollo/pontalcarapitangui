@@ -260,17 +260,33 @@ const Menu: React.FC = () => {
                         {item.description || 'Delicioso plato preparado al momento con los mejores ingredientes.'}
                       </p>
 
-                      {/* Tags */}
-                      {item.tags && item.tags.length > 0 && (
+                      {/* Tags & Dietary Badges */}
+                      {(item.tags || item.dietary || item.allergens) && (
                         <div className="flex flex-wrap gap-1 pt-1">
-                          {item.tags.map((tag, idx) => (
+                          {item.dietary?.map((diet, idx) => (
                             <span
-                              key={idx}
-                              className="text-[10px] bg-secondary/30 text-muted-foreground px-2 py-0.5 rounded-sm"
+                              key={`diet-${idx}`}
+                              className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md"
+                            >
+                              🌱 {diet}
+                            </span>
+                          ))}
+                          {item.tags?.map((tag, idx) => (
+                            <span
+                              key={`tag-${idx}`}
+                              className="text-[10px] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md"
                             >
                               {tag}
                             </span>
                           ))}
+                          {item.allergens && item.allergens.length > 0 && (
+                            <span
+                              className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20"
+                              title={`Contiene: ${item.allergens.join(', ')}`}
+                            >
+                              ⚠️ Alérgenos: {item.allergens.slice(0, 2).join(', ')}{item.allergens.length > 2 ? '...' : ''}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>

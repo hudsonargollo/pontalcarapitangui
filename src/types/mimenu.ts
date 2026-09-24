@@ -22,6 +22,7 @@ export interface Venue {
   opening_hours: string;
   instagram?: string;
   facebook?: string;
+  google_review_url?: string;
   is_active: boolean;
 }
 
@@ -54,6 +55,8 @@ export interface MenuItemDetail {
   reviews_count: number;
   average_rating: number;
   tags?: string[];
+  allergens?: string[]; // e.g. ["Gluten", "Lácteos", "Huevo", "Maní"]
+  dietary?: string[]; // e.g. ["Sin Gluten", "Vegetariano", "Picante"]
   options?: {
     name: string;
     choices: { label: string; extra_price: number }[];
