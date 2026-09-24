@@ -58,6 +58,11 @@ interface MimenuContextType {
   deleteTable: (id: string) => void;
   resolveTableByHash: (hash: string) => VenueTable | undefined;
   
+  // Batch Onboarding & Menu methods
+  setCategories: (cats: MenuCategoryDetail[] | ((prev: MenuCategoryDetail[]) => MenuCategoryDetail[])) => void;
+  setTables: (tables: VenueTable[] | ((prev: VenueTable[]) => VenueTable[])) => void;
+  batchSetupVenue: (venueData: Partial<Venue>, newCategories: MenuCategoryDetail[], tableCount: number) => void;
+  
   // Order methods
   createOrder: (orderData: Omit<MimenuOrder, 'id' | 'order_number' | 'created_at' | 'status'>) => MimenuOrder;
   updateOrderStatus: (orderId: string, status: MimenuOrder['status']) => void;
@@ -367,6 +372,40 @@ export const MimenuProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return tables.find(t => t.qr_code_hash.toLowerCase() === hash.toLowerCase() || t.table_number.toLowerCase() === hash.toLowerCase());
   };
 
+  const batchSetupVenue = (venueData: Partial<Venue>, newCategories: MenuCategoryDetail[], tableCount: number) => {
+    const updatedVenue: Venue = {
+      ...venue,
+      ...venueData,
+    };
+    setVenue(updatedVenue);
+
+    if (newCategories && newCategories.length > 0) {
+      setCategories(newCategories);
+    }
+
+    if (tableCount > 0) {
+      const generatedTables: VenueTable[] = Array.from({ length: tableCount }, (_, idx) => {
+        const num = (idx + 1).toString();
+        const zone: VenueTable['zone'] = idx < 6 ? 'Principal' : idx < 12 ? 'Terraza' : 'Barra';
+        return {
+          id: `tbl-${Date.now()}-${num}`,
+          venue_id: updatedVenue.id,
+          table_number: num,
+          label: `Mesa ${num}`,
+          qr_code_hash: `${updatedVenue.slug || 'venue'}-m${num}-${Math.random().toString(36).substring(2, 7)}`,
+          zone,
+          is_occupied: false,
+          is_active: true,
+        };
+      });
+      setTables(generatedTables);
+    }
+
+    toast.success('¡Restaurante configurado con éxito!', {
+      description: 'Menú, mesas y branding listos para operar.',
+    });
+  };
+
   // Order methods
   const createOrder = (orderData: Omit<MimenuOrder, 'id' | 'order_number' | 'created_at' | 'status'>): MimenuOrder => {
     const orderNumber = `#${Math.floor(1000 + Math.random() * 9000)}`;
@@ -437,6 +476,9 @@ export const MimenuProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateTable,
         deleteTable,
         resolveTableByHash,
+        setCategories,
+        setTables,
+        batchSetupVenue,
         createOrder,
         updateOrderStatus,
       }}

@@ -47,6 +47,7 @@ const WaiterDiagnostic = lazy(() => import("./pages/waiter/WaiterDiagnostic"));
 
 // Lazy load public pages
 const Landing = lazy(() => import("./pages/public/Landing"));
+const Onboarding = lazy(() => import("./pages/public/Onboarding"));
 const LandingMenu = lazy(() => import("./pages/public/LandingMenu"));
 const Proposta = lazy(() => import("./pages/public/Proposta"));
 const ContractManagement = lazy(() => import("./pages/public/ContractManagement"));
@@ -92,6 +93,11 @@ const App = () => {
                   <Route path="/" element={
                     <Suspense fallback={<LoadingFallback />}>
                       <Landing />
+                    </Suspense>
+                  } />
+                  <Route path="/onboarding" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Onboarding />
                     </Suspense>
                   } />
                   <Route path="/landing-menu" element={

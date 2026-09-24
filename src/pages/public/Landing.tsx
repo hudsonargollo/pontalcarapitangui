@@ -213,7 +213,7 @@ export const Landing: React.FC = () => {
 
             <Button
               size="sm"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/onboarding')}
               className="bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 rounded-xl"
             >
               <span>Probar 14 Días Gratis</span>
@@ -253,7 +253,7 @@ export const Landing: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                 <Button
                   size="lg"
-                  onClick={() => navigate('/menu')}
+                  onClick={() => navigate('/onboarding')}
                   className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-base px-8 py-6 rounded-2xl shadow-xl shadow-amber-500/25"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
@@ -689,7 +689,7 @@ export const Landing: React.FC = () => {
               </div>
 
               <Button
-                onClick={() => navigate('/menu')}
+                onClick={() => navigate('/onboarding')}
                 className="w-full bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-xs py-5 rounded-xl shadow-lg"
               >
                 <span>Empezar a Ahorrar Hoy (14 Días Gratis)</span>
@@ -753,7 +753,7 @@ export const Landing: React.FC = () => {
 
             <Button
               variant="outline"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/onboarding')}
               className="w-full font-bold text-xs py-5 rounded-xl border-border hover:border-amber-500"
             >
               Comenzar con Starter
@@ -785,7 +785,7 @@ export const Landing: React.FC = () => {
             </div>
 
             <Button
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/onboarding')}
               className="w-full bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-xs py-5 rounded-xl shadow-lg shadow-amber-500/25"
             >
               Probar 14 Días Gratis
@@ -812,7 +812,7 @@ export const Landing: React.FC = () => {
 
             <Button
               variant="outline"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/onboarding')}
               className="w-full font-bold text-xs py-5 rounded-xl border-border hover:border-amber-500"
             >
               Contactar Asesor
@@ -864,7 +864,7 @@ export const Landing: React.FC = () => {
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/onboarding')}
               className="bg-white text-gray-900 hover:bg-white/90 font-black text-sm px-8 py-6 rounded-2xl shadow-2xl"
             >
               <Sparkles className="w-4 h-4 mr-2 text-amber-600" />
