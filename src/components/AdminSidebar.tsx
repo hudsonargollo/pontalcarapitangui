@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
+  Bot,
   LayoutDashboard,
   ChefHat,
   ShoppingBag,
@@ -25,6 +26,7 @@ interface SidebarItem {
   icon: React.ReactNode;
   path: string;
   description: string;
+  badge?: string;
 }
 
 const AdminSidebar = () => {
@@ -34,13 +36,14 @@ const AdminSidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
 
   const menuItems: SidebarItem[] = [
-    { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5 text-amber-400" />, path: '/admin', description: 'Resumen & Kpis' },
+    { label: 'AI Copilot', icon: <Bot className="w-5 h-5 text-amber-400" />, path: '/admin/ai', description: 'Chat & Inteligencia', badge: 'IA' },
+    { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5 text-blue-400" />, path: '/admin', description: 'Resumen & Kpis' },
     { label: 'Cocina & KDS', icon: <ChefHat className="w-5 h-5 text-emerald-400" />, path: '/cashier', description: 'Pedidos en vivo' },
     { label: 'Ofertas Inteligentes', icon: <Sparkles className="w-5 h-5 text-yellow-400" />, path: '/admin/offers', description: 'Cycling promos' },
     { label: 'Hotness & Métricas', icon: <Flame className="w-5 h-5 text-red-400" />, path: '/admin/analytics', description: 'Velocidad & Ventas' },
-    { label: 'Mesas & QR', icon: <QrCode className="w-5 h-5 text-blue-400" />, path: '/admin/tables', description: 'Table mapping' },
-    { label: 'Reseñas & Feedback', icon: <MessageSquare className="w-5 h-5 text-purple-400" />, path: '/admin/reviews', description: 'Moderación' },
-    { label: 'White-Label & Marca', icon: <Palette className="w-5 h-5 text-pink-400" />, path: '/admin/branding', description: 'Personalización' },
+    { label: 'Mesas & QR', icon: <QrCode className="w-5 h-5 text-purple-400" />, path: '/admin/tables', description: 'Table mapping' },
+    { label: 'Reseñas & Feedback', icon: <MessageSquare className="w-5 h-5 text-pink-400" />, path: '/admin/reviews', description: 'Moderación' },
+    { label: 'White-Label & Marca', icon: <Palette className="w-5 h-5 text-indigo-400" />, path: '/admin/branding', description: 'Personalización' },
     { label: 'Configuraciones', icon: <Settings className="w-5 h-5 text-gray-400" />, path: '/admin/settings', description: 'Sistema & Red' },
   ];
 
@@ -73,7 +76,7 @@ const AdminSidebar = () => {
                 <div className="flex items-center gap-1.5">
                   <span className="font-black text-sm tracking-tight text-white">{venue.name}</span>
                   <span className="text-[9px] font-black uppercase bg-amber-500/20 text-amber-400 px-1 py-0.5 rounded">
-                    SaaS
+                    KV SaaS
                   </span>
                 </div>
                 <p className="text-[10px] text-gray-400">MIMENU Santa Cruz</p>
@@ -103,19 +106,27 @@ const AdminSidebar = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                 isActive(item.path)
                   ? 'bg-gradient-to-r from-amber-500/30 to-red-500/20 text-white border border-amber-500/50 shadow-md font-bold'
                   : 'text-gray-400 hover:bg-gray-800/60 hover:text-white'
               }`}
               title={!isOpen ? item.label : ''}
             >
-              <span className="flex-shrink-0">{item.icon}</span>
-              {isOpen && (
-                <div className="flex-1 text-left">
-                  <div className="text-xs font-bold">{item.label}</div>
-                  <div className="text-[10px] text-gray-400 group-hover:text-gray-300">{item.description}</div>
-                </div>
+              <div className="flex items-center gap-3">
+                <span className="flex-shrink-0">{item.icon}</span>
+                {isOpen && (
+                  <div className="text-left">
+                    <div className="text-xs font-bold">{item.label}</div>
+                    <div className="text-[10px] text-gray-400 group-hover:text-gray-300">{item.description}</div>
+                  </div>
+                )}
+              </div>
+
+              {isOpen && item.badge && (
+                <span className="text-[9px] font-black uppercase bg-gradient-to-r from-amber-500 to-red-500 text-white px-1.5 py-0.5 rounded-full shadow-xs">
+                  {item.badge}
+                </span>
               )}
             </button>
           ))}
@@ -124,7 +135,7 @@ const AdminSidebar = () => {
         {/* Footer info */}
         <div className="p-3 border-t border-gray-800 text-[11px] text-gray-400 flex items-center justify-between">
           {isOpen && (
-            <span className="text-[10px]">MIMENU v2.0 • SCZ</span>
+            <span className="text-[10px]">MIMENU KV • SCZ</span>
           )}
           <button
             onClick={() => navigate('/')}

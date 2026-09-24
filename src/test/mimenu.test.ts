@@ -4,9 +4,12 @@ import {
   INITIAL_CATEGORIES, 
   INITIAL_CYCLING_OFFERS, 
   INITIAL_TABLES, 
+  INITIAL_REVIEWS,
   calculateHotnessScore, 
   getHotnessLabel 
 } from '@/data/mimenuData';
+import { kv, KV_KEYS } from '@/lib/kvStore';
+import { MimenuAIEngine } from '@/lib/aiCopilotEngine';
 
 describe('MIMENU - Moe\'s Taberna Santa Cruz de la Sierra Test Suite', () => {
 
@@ -85,6 +88,71 @@ describe('MIMENU - Moe\'s Taberna Santa Cruz de la Sierra Test Suite', () => {
       const hashes = INITIAL_TABLES.map(t => t.qr_code_hash);
       const uniqueHashes = new Set(hashes);
       expect(uniqueHashes.size).toBe(hashes.length);
+    });
+  });
+
+  describe('KV Storage Engine (No Supabase Dependency)', () => {
+    it('should persist and retrieve objects by namespace key', async () => {
+      const testKey = KV_KEYS.venue('test-venue-1');
+      await kv.put(testKey, { name: "Test Moe's", city: "Santa Cruz" });
+      
+      const retrieved = await kv.get<{ name: string; city: string }>(testKey);
+      expect(retrieved).toBeDefined();
+      expect(retrieved?.name).toBe("Test Moe's");
+      expect(retrieved?.city).toBe("Santa Cruz");
+
+      await kv.delete(testKey);
+      const afterDelete = await kv.get(testKey);
+      expect(afterDelete).toBeNull();
+    });
+
+    it('should support export and import for full state backup', async () => {
+      await kv.put('test:export', { ok: true });
+      const dump = await kv.exportAll();
+      expect(dump).toBeDefined();
+      expect(dump['test:export']).toEqual({ ok: true });
+      await kv.delete('test:export');
+    });
+  });
+
+  describe('AI Copilot & Business Intelligence Engine', () => {
+    const aiEngine = new MimenuAIEngine(
+      DEFAULT_VENUE,
+      INITIAL_CATEGORIES,
+      INITIAL_CYCLING_OFFERS,
+      INITIAL_REVIEWS,
+      []
+    );
+
+    it('should synthesize self-learning insights from orders and reviews', async () => {
+      const memory = await aiEngine.generateLearnedInsights();
+      expect(memory).toBeDefined();
+      expect(memory.learnedInsights.length).toBeGreaterThanOrEqual(3);
+      expect(memory.peakDemandWindow).toContain('21:00');
+    });
+
+    it('should generate structured actions for adding menu items', async () => {
+      const response = await aiEngine.processUserInput('Agrega una nueva cerveza artesanal IPA a 28 Bs');
+      expect(response.sender).toBe('ai');
+      expect(response.actions).toBeDefined();
+      expect(response.actions?.length).toBe(1);
+      expect(response.actions?.[0].type).toBe('ADD_MENU_ITEM');
+      expect(response.actions?.[0].payload.price).toBe(28);
+    });
+
+    it('should generate structured actions for updating prices', async () => {
+      const response = await aiEngine.processUserInput('Sube el precio de la Salchipapa Moe Monster a 48 Bs');
+      expect(response.sender).toBe('ai');
+      expect(response.actions).toBeDefined();
+      expect(response.actions?.[0].type).toBe('UPDATE_ITEM_PRICE');
+      expect(response.actions?.[0].payload.new_price).toBe(48);
+    });
+
+    it('should answer analytics questions with metrics summary', async () => {
+      const response = await aiEngine.processUserInput('¿Cuáles son las métricas de venta y rendimiento?');
+      expect(response.sender).toBe('ai');
+      expect(response.dataInsights).toBeDefined();
+      expect(response.dataInsights?.metrics.length).toBeGreaterThanOrEqual(2);
     });
   });
 });
