@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/lib/cartContext";
+import { MimenuProvider } from "@/lib/mimenuContext";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { queueManager } from "@/integrations/whatsapp/queue-manager";
 import LoadingFallback from "@/components/LoadingFallback";
@@ -20,6 +21,11 @@ const OrderStatus = lazy(() => import("./pages/customer/OrderStatus"));
 
 // Lazy load admin pages
 const Admin = lazy(() => import("./pages/admin/Admin"));
+const AdminOffers = lazy(() => import("./pages/admin/AdminOffers"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminTables = lazy(() => import("./pages/admin/AdminTables"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminBranding = lazy(() => import("./pages/admin/AdminBranding"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminWaiterReportsPage = lazy(() => import("./pages/admin/AdminWaiterReportsPage"));
@@ -74,290 +80,216 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <CartProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-          <Routes>
-            <Route path="/" element={
-              <Suspense fallback={<LoadingFallback />}>
-                <Landing />
-              </Suspense>
-            } />
-          <Route path="/landing-menu" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <LandingMenu />
-            </Suspense>
-          } />
-          <Route path="/proposta" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Proposta />
-            </Suspense>
-          } />
-          <Route path="/contract-management" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <ContractManagement />
-            </Suspense>
-          } />
-          <Route path="/menu" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Menu />
-            </Suspense>
-          } />
-          <Route path="/menu-debug" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <MenuDebug />
-            </Suspense>
-          } />
-          <Route path="/payment-debug" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PaymentDebug />
-            </Suspense>
-          } />
-          <Route path="/credit-card-debug" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CreditCardDebug />
-            </Suspense>
-          } />
-          <Route path="/card-payment-test" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CardPaymentTest />
-            </Suspense>
-          } />
-          <Route path="/payment-test" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <PaymentTest />
-            </Suspense>
-          } />
-          <Route path="/checkout" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Checkout />
-            </Suspense>
-          } />
-          <Route path="/checkout2" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <CheckoutLegacy />
-            </Suspense>
-          } />
-          <Route path="/payment/:orderId" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Payment />
-            </Suspense>
-          } />
-          <Route path="/order-status/:orderId" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OrderStatus />
-            </Suspense>
-          } />
-          <Route path="/order/:orderId" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OrderStatus />
-            </Suspense>
-          } />
-          <Route path="/order-lookup" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <OrderLookup />
-            </Suspense>
-          } />
-          <Route path="/auth" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Auth />
-            </Suspense>
-          } />
-          <Route path="/waiter" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <Waiter />
-            </Suspense>
-          } />
-          <Route
-            path="/waiter/setup"
-            element={
-              <ProtectedRoute requiredRole="waiter">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WaiterSetup />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/waiter/dashboard"
-            element={
-              <ProtectedRoute requiredRole="waiter">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WaiterDashboard />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/waiter-dashboard"
-            element={
-              <ProtectedRoute requiredRole="waiter">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WaiterDashboard />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <Admin />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/kitchen"
-            element={
-              <ProtectedRoute requiredRole="kitchen">
-                <Suspense fallback={<LoadingFallback />}>
-                  <Cashier />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cashier"
-            element={
-              <ProtectedRoute requiredRole="cashier">
-                <Suspense fallback={<LoadingFallback />}>
-                  <Cashier />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <Reports />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/whatsapp-admin"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WhatsAppAdmin />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/print-server-config"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <PrintServerConfig />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/monitoring"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <Monitoring />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/products"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <AdminProducts />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/settings"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <AdminSettings />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/waiter-management"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WaiterManagement />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/waiter-reports"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <AdminWaiterReportsPage />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/customers"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <CustomerManagement />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/diagnostic"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <Suspense fallback={<LoadingFallback />}>
-                  <SystemDiagnostic />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/waiter-diagnostic"
-            element={
-              <ProtectedRoute requiredRole="waiter">
-                <Suspense fallback={<LoadingFallback />}>
-                  <WaiterDiagnostic />
-                </Suspense>
-              </ProtectedRoute>
-            }
-          />
-          {/* QR Code direct access route - must be last before catch-all */}
-          <Route path="/:tableId" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <QRRedirect />
-            </Suspense>
-          } />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={
-            <Suspense fallback={<LoadingFallback />}>
-              <NotFound />
-            </Suspense>
-          } />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-    </CartProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
+        <MimenuProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  {/* Public & SEO Landing */}
+                  <Route path="/" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Landing />
+                    </Suspense>
+                  } />
+                  <Route path="/landing-menu" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <LandingMenu />
+                    </Suspense>
+                  } />
+                  <Route path="/proposta" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Proposta />
+                    </Suspense>
+                  } />
+                  <Route path="/contract-management" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ContractManagement />
+                    </Suspense>
+                  } />
+
+                  {/* Customer Menu & Ordering */}
+                  <Route path="/menu" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Menu />
+                    </Suspense>
+                  } />
+                  <Route path="/checkout" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Checkout />
+                    </Suspense>
+                  } />
+                  <Route path="/checkout2" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CheckoutLegacy />
+                    </Suspense>
+                  } />
+                  <Route path="/payment/:orderId" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Payment />
+                    </Suspense>
+                  } />
+                  <Route path="/order-status/:orderId" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OrderStatus />
+                    </Suspense>
+                  } />
+                  <Route path="/order/:orderId" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OrderStatus />
+                    </Suspense>
+                  } />
+                  <Route path="/order-lookup" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <OrderLookup />
+                    </Suspense>
+                  } />
+                  <Route path="/auth" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Auth />
+                    </Suspense>
+                  } />
+
+                  {/* Staff & Waiter routes */}
+                  <Route path="/waiter" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Waiter />
+                    </Suspense>
+                  } />
+                  <Route path="/waiter/setup" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WaiterSetup />
+                    </Suspense>
+                  } />
+                  <Route path="/waiter/dashboard" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WaiterDashboard />
+                    </Suspense>
+                  } />
+                  <Route path="/waiter-dashboard" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WaiterDashboard />
+                    </Suspense>
+                  } />
+                  <Route path="/kitchen" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Cashier />
+                    </Suspense>
+                  } />
+                  <Route path="/cashier" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Cashier />
+                    </Suspense>
+                  } />
+
+                  {/* Admin Command Center Routes */}
+                  <Route path="/admin" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Admin />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/offers" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminOffers />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/analytics" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminAnalytics />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/tables" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminTables />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/reviews" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminReviews />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/branding" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminBranding />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/products" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminProducts />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/settings" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminSettings />
+                    </Suspense>
+                  } />
+                  <Route path="/reports" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Reports />
+                    </Suspense>
+                  } />
+                  <Route path="/whatsapp-admin" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WhatsAppAdmin />
+                    </Suspense>
+                  } />
+                  <Route path="/print-server-config" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <PrintServerConfig />
+                    </Suspense>
+                  } />
+                  <Route path="/monitoring" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <Monitoring />
+                    </Suspense>
+                  } />
+                  <Route path="/waiter-management" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WaiterManagement />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/waiter-reports" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminWaiterReportsPage />
+                    </Suspense>
+                  } />
+                  <Route path="/customers" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <CustomerManagement />
+                    </Suspense>
+                  } />
+                  <Route path="/diagnostic" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <SystemDiagnostic />
+                    </Suspense>
+                  } />
+                  <Route path="/waiter-diagnostic" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <WaiterDiagnostic />
+                    </Suspense>
+                  } />
+
+                  {/* QR Code direct access route */}
+                  <Route path="/:tableId" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <QRRedirect />
+                    </Suspense>
+                  } />
+
+                  {/* Catch-all route */}
+                  <Route path="*" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <NotFound />
+                    </Suspense>
+                  } />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </CartProvider>
+        </MimenuProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 };
 

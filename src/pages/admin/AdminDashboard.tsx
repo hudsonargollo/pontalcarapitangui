@@ -1,185 +1,296 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Users, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { 
+  Flame, 
+  Sparkles, 
+  ChefHat, 
+  ShoppingBag, 
+  QrCode, 
+  TrendingUp, 
+  Star, 
+  DollarSign, 
+  Clock, 
+  ArrowUpRight,
+  ExternalLink,
+  MessageSquare
+} from 'lucide-react';
+import { useMimenu } from '@/lib/mimenuContext';
+import { HotnessIndicator } from '@/components/HotnessIndicator';
 
-interface DashboardStats {
-  totalOrders: number;
-  totalWaiters: number;
-  totalRevenue: number;
-  pendingOrders: number;
-  completedOrders: number;
-  averageOrderValue: number;
-}
-
-const AdminDashboard = () => {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalOrders: 0,
-    totalWaiters: 0,
-    totalRevenue: 0,
-    pendingOrders: 0,
-    completedOrders: 0,
-    averageOrderValue: 0,
-  });
-  const [loading, setLoading] = useState(true);
+const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { venue, categories, cyclingOffers, activeOffers, tables, reviews, orders, recalculateAllHotness } = useMimenu();
 
   useEffect(() => {
-    loadDashboardStats();
-  }, []);
+    document.title = `Command Center — ${venue.name} | MIMENU`;
+  }, [venue.name]);
 
-  const loadDashboardStats = async () => {
-    try {
-      setLoading(true);
+  const allItems = categories.flatMap(c => c.items);
+  const hotItems = [...allItems].sort((a, b) => b.hotness_score - a.hotness_score || b.velocity_24h - a.velocity_24h).slice(0, 5);
 
-      // Get orders stats
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('id, total_amount, status')
-        .is('deleted_at', null);
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const activeOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'preparing').length;
+  const occupiedTablesCount = tables.filter(t => t.is_occupied).length;
 
-      if (ordersError) throw ordersError;
-
-      // Get waiters count
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
-      if (usersError) throw usersError;
-
-      const waiters = (users || []).filter(u => u.user_metadata?.role === 'waiter').length;
-
-      // Calculate stats
-      const totalOrders = orders?.length || 0;
-      const completedOrders = orders?.filter(o => o.status === 'completed').length || 0;
-      const pendingOrders = orders?.filter(o => o.status === 'pending' || o.status === 'pending_payment').length || 0;
-      const totalRevenue = orders?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-      const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-
-      setStats({
-        totalOrders,
-        totalWaiters: waiters,
-        totalRevenue,
-        pendingOrders,
-        completedOrders,
-        averageOrderValue,
-      });
-    } catch (error) {
-      console.error('Error loading dashboard stats:', error);
-      toast.error('Erro ao carregar estatísticas');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-    color,
-    subtitle,
-  }: {
-    title: string;
-    value: string | number;
-    icon: React.ReactNode;
-    color: string;
-    subtitle?: string;
-  }) => (
-    <Card className={`border-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ${color}`}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-semibold text-gray-600 flex items-center justify-between">
-          <span>{title}</span>
-          <div className={`p-2 rounded-lg ${color.split(' ')[1]}`}>{Icon}</div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold text-gray-900">{value}</div>
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-      </CardContent>
-    </Card>
-  );
+  const totalOfferRevenue = cyclingOffers.reduce((sum, o) => sum + o.analytics.revenue_generated, 0);
+  const totalOfferConversions = cyclingOffers.reduce((sum, o) => sum + o.analytics.conversions, 0);
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Bem-vindo ao painel de controle do PONTAL Carapitangui</p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard
-          title="Total de Pedidos"
-          value={stats.totalOrders}
-          icon={<ShoppingBag className="w-5 h-5 text-blue-600" />}
-          color="bg-blue-50 border-blue-200"
-          subtitle="Todos os pedidos"
-        />
-        <StatCard
-          title="Garçons Ativos"
-          value={stats.totalWaiters}
-          icon={<Users className="w-5 h-5 text-purple-600" />}
-          color="bg-purple-50 border-purple-200"
-          subtitle="Membros da equipe"
-        />
-        <StatCard
-          title="Receita Total"
-          value={`R$ ${stats.totalRevenue.toFixed(2)}`}
-          icon={<TrendingUp className="w-5 h-5 text-green-600" />}
-          color="bg-green-50 border-green-200"
-          subtitle="Faturamento"
-        />
-        <StatCard
-          title="Pedidos Pendentes"
-          value={stats.pendingOrders}
-          icon={<Clock className="w-5 h-5 text-orange-600" />}
-          color="bg-orange-50 border-orange-200"
-          subtitle="Aguardando processamento"
-        />
-        <StatCard
-          title="Pedidos Concluídos"
-          value={stats.completedOrders}
-          icon={<CheckCircle className="w-5 h-5 text-green-600" />}
-          color="bg-green-50 border-green-200"
-          subtitle="Finalizados"
-        />
-        <StatCard
-          title="Ticket Médio"
-          value={`R$ ${stats.averageOrderValue.toFixed(2)}`}
-          icon={<AlertCircle className="w-5 h-5 text-indigo-600" />}
-          color="bg-indigo-50 border-indigo-200"
-          subtitle="Valor médio por pedido"
-        />
-      </div>
-
-      {/* Quick Actions */}
-      <Card className="border-2 border-gray-200 rounded-xl shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg font-display">Ações Rápidas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:shadow-lg transition-all duration-200 border-2 border-blue-200">
-              <ShoppingBag className="w-6 h-6 text-blue-600 mb-2" />
-              <p className="font-semibold text-sm text-gray-900">Ver Pedidos</p>
-              <p className="text-xs text-gray-600">Gerenciar pedidos</p>
-            </button>
-            <button className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg hover:shadow-lg transition-all duration-200 border-2 border-purple-200">
-              <Users className="w-6 h-6 text-purple-600 mb-2" />
-              <p className="font-semibold text-sm text-gray-900">Garçons</p>
-              <p className="text-xs text-gray-600">Gerenciar equipe</p>
-            </button>
-            <button className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg hover:shadow-lg transition-all duration-200 border-2 border-green-200">
-              <TrendingUp className="w-6 h-6 text-green-600 mb-2" />
-              <p className="font-semibold text-sm text-gray-900">Relatórios</p>
-              <p className="text-xs text-gray-600">Ver análises</p>
-            </button>
-            <button className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg hover:shadow-lg transition-all duration-200 border-2 border-orange-200">
-              <ShoppingBag className="w-6 h-6 text-orange-600 mb-2" />
-              <p className="font-semibold text-sm text-gray-900">Produtos</p>
-              <p className="text-xs text-gray-600">Cardápio</p>
-            </button>
+    <div className="space-y-8 pb-12">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🍺</span>
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+              Command Center — {venue.name}
+            </h1>
+            <span className="text-xs bg-amber-500/15 text-amber-500 font-bold px-2 py-0.5 rounded border border-amber-500/30">
+              Santa Cruz de la Sierra
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-xs text-muted-foreground mt-1">
+            Plataforma Multi-Tenant MIMENU • Gestión de pedidos, ofertas inteligentes y social proof.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={recalculateAllHotness}
+            className="text-xs font-bold gap-1.5"
+          >
+            <Flame className="w-3.5 h-3.5 text-red-500 fill-red-500" />
+            <span>Recalcular Hotness</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => window.open('/menu', '_blank')}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold gap-1.5 shadow-sm"
+          >
+            <span>Ver Menú en Vivo</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Primary KPI Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Gross Revenue */}
+        <Card className="border border-border/80 shadow-xs bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
+              <span>Ventas del Turno</span>
+              <DollarSign className="w-4 h-4 text-emerald-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">
+              {venue.currency} {totalRevenue.toFixed(0)}
+            </div>
+            <p className="text-[11px] text-emerald-500 font-semibold mt-1 flex items-center gap-1">
+              <TrendingUp className="w-3 h-3" /> +18.4% vs semana pasada
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Live Orders in Kitchen */}
+        <Card className="border border-border/80 shadow-xs bg-card cursor-pointer hover:border-primary transition-all" onClick={() => navigate('/cashier')}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
+              <span>Pedidos en Cocina / KDS</span>
+              <ChefHat className="w-4 h-4 text-amber-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-amber-500">
+              {activeOrdersCount} activos
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {orders.length} pedidos totales hoy
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Table Occupancy */}
+        <Card className="border border-border/80 shadow-xs bg-card cursor-pointer hover:border-primary transition-all" onClick={() => navigate('/admin/tables')}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
+              <span>Ocupación de Mesas</span>
+              <QrCode className="w-4 h-4 text-blue-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-foreground">
+              {occupiedTablesCount} / {tables.length}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {Math.round((occupiedTablesCount / tables.length) * 100)}% capacidad ocupada
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Cycling Offers Revenue */}
+        <Card className="border border-border/80 shadow-xs bg-card cursor-pointer hover:border-primary transition-all" onClick={() => navigate('/admin/offers')}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
+              <span>Ventas Smart Offers</span>
+              <Sparkles className="w-4 h-4 text-red-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-black text-red-500">
+              {venue.currency} {totalOfferRevenue}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {totalOfferConversions} combos convertidos
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Grid: Hotness Leaderboard & Active Smart Offers */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Left Column: The "Hotness" Social Proof Leaderboard */}
+        <div className="lg:col-span-7 space-y-4">
+          <Card className="border border-border/80 shadow-sm bg-card">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-red-500 fill-red-500" />
+                  <span>Ranking de Popularidad & "Hotness"</span>
+                </CardTitle>
+                <button
+                  onClick={() => navigate('/admin/analytics')}
+                  className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                >
+                  Ver Algoritmo <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-0 divide-y divide-border/60">
+              {hotItems.map((item, idx) => (
+                <div key={item.id} className="p-4 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                      idx === 0 ? 'bg-amber-500 text-black' : idx === 1 ? 'bg-zinc-300 text-black' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {idx + 1}
+                    </span>
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="w-12 h-12 rounded-xl object-cover border border-border"
+                    />
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground line-clamp-1">{item.name}</h4>
+                      <p className="text-[11px] text-muted-foreground">
+                        {venue.currency} {item.price} • {item.velocity_24h} vendidos (24h)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1">
+                    <HotnessIndicator score={item.hotness_score} compact />
+                    <span className="text-[10px] text-muted-foreground">
+                      Base 14d: {item.baseline_14d}/día
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column: Intelligent Cycling Offers Live Status */}
+        <div className="lg:col-span-5 space-y-4">
+          <Card className="border border-border/80 shadow-sm bg-card">
+            <CardHeader className="pb-3 border-b border-border/60">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <span>Ofertas Inteligentes Activas</span>
+                </CardTitle>
+                <button
+                  onClick={() => navigate('/admin/offers')}
+                  className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+                >
+                  Gestionar <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-4 space-y-3">
+              {activeOffers.map((offer) => {
+                const convRate = offer.analytics.impressions > 0 
+                  ? ((offer.analytics.conversions / offer.analytics.impressions) * 100).toFixed(1)
+                  : '0.0';
+
+                return (
+                  <div
+                    key={offer.id}
+                    className="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-[10px] font-black uppercase bg-red-600 text-white px-2 py-0.5 rounded-full">
+                        {offer.badge}
+                      </span>
+                      <span className="text-xs font-black text-amber-500">
+                        {venue.currency} {offer.discount_price}
+                      </span>
+                    </div>
+
+                    <h4 className="text-xs font-bold text-foreground">{offer.title}</h4>
+
+                    <div className="grid grid-cols-3 gap-2 pt-1 text-center border-t border-border/40 text-[10px]">
+                      <div>
+                        <p className="text-muted-foreground">Vistas</p>
+                        <p className="font-bold text-foreground">{offer.analytics.impressions}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Órdenes</p>
+                        <p className="font-bold text-foreground">{offer.analytics.conversions}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Conv. %</p>
+                        <p className="font-bold text-emerald-500">{convRate}%</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Table QR Fast Card */}
+          <Card className="border border-border/80 shadow-sm bg-gradient-to-br from-blue-500/10 via-card to-card p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-blue-500" />
+                <h4 className="text-xs font-bold text-foreground">Table Mapping & QRs</h4>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate('/admin/tables')}
+                className="text-xs h-7 px-2.5"
+              >
+                Imprimir Códigos
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {tables.length} mesas configuradas con hashes únicos en Equipetrol SCZ.
+            </p>
+          </Card>
+        </div>
+
+      </div>
     </div>
   );
 };

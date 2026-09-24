@@ -1,548 +1,413 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { CheckCircle, ArrowLeft, Plus, Minus, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  CheckCircle2, 
+  ArrowLeft, 
+  Plus, 
+  Minus, 
+  Trash2, 
+  UtensilsCrossed, 
+  ShoppingBag, 
+  QrCode, 
+  CreditCard, 
+  Banknote,
+  Clock,
+  Sparkles,
+  Flame
+} from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cartContext";
-import { normalizePhone } from "@/lib/phoneUtils";
-import { notificationTriggers } from "@/integrations/whatsapp";
+import { useMimenu } from "@/lib/mimenuContext";
 
-type CheckoutStep = 'NAME' | 'WHATSAPP' | 'CONFIRM' | 'REVIEW';
-
-const WELCOME_PHRASES = [
-  "Olá, é uma honra ter você aqui.",
-  "Que alegria ter você conosco!",
-  "Seja muito bem-vindo!",
-  "É um prazer recebê-lo aqui.",
-  "Que bom que você chegou!",
-  "Estamos felizes em te atender!",
-  "Sua presença nos alegra!",
-  "Bem-vindo ao nosso cantinho!",
-  "Que privilégio ter você aqui!",
-  "Ficamos honrados com sua visita!",
-  "É maravilhoso te ver por aqui!",
-  "Sua chegada iluminou nosso dia!",
-  "Que sorte a nossa te receber!",
-  "Estamos radiantes com sua presença!",
-  "Que felicidade ter você conosco!"
-];
-
-const Checkout = () => {
+const Checkout: React.FC = () => {
   const navigate = useNavigate();
+  const { venue, selectedTable, fulfillmentType, setFulfillmentType, setSelectedTable, createOrder } = useMimenu();
   const { state: cartState, clearCart, addItem, removeItem } = useCart();
   
-  useEffect(() => {
-    document.title = "Checkout — PONTAL Carapitangui";
-  }, []);
-  
-  const [step, setStep] = useState<CheckoutStep>('NAME');
-  const [name, setName] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [errors, setErrors] = useState({ name: "", whatsapp: "" });
-  const [touched, setTouched] = useState({ name: false, whatsapp: false });
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<'qr_simple' | 'cash' | 'card'>('qr_simple');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStaff, setIsStaff] = useState(false);
-  const [welcomePhrase] = useState(() => {
-    return WELCOME_PHRASES[Math.floor(Math.random() * WELCOME_PHRASES.length)];
-  });
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [createdOrderNumber, setCreatedOrderNumber] = useState("");
 
   useEffect(() => {
-    const checkUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const userRole = user?.user_metadata?.role;
-      setIsStaff(userRole === 'waiter' || userRole === 'admin' || userRole === 'cashier');
-    };
-    checkUserRole();
-  }, []);
+    document.title = `Finalizar Pedido — ${venue.name} Santa Cruz`;
+  }, [venue.name]);
 
-  const pageVariants = {
-    initial: { opacity: 0, x: 20 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -20 }
-  };
+  const totalAmount = cartState.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const transition = { duration: 0.3 };
+  const handleCreateOrder = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const capitalizeName = (name: string): string => {
-    return name
-      .trim()
-      .toLowerCase()
-      .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
-
-  const validateName = (value: string, showError: boolean = true): boolean => {
-    const trimmed = value.trim();
-    if (trimmed.length < 2) {
-      if (showError) {
-        setErrors(prev => ({ ...prev, name: "Nome deve ter pelo menos 2 caracteres" }));
-      }
-      return false;
+    if (cartState.items.length === 0) {
+      toast.error("Tu carrito está vacío");
+      return;
     }
-    setErrors(prev => ({ ...prev, name: "" }));
-    return true;
-  };
 
-  const validateWhatsApp = (value: string, showError: boolean = true): boolean => {
-    const digits = value.replace(/\D/g, '');
-    if (digits.length !== 11) {
-      if (showError) {
-        setErrors(prev => ({ ...prev, whatsapp: "WhatsApp deve ter 11 dígitos (DDD + número)" }));
-      }
-      return false;
+    if (!customerName.trim()) {
+      toast.error("Por favor ingresa tu nombre");
+      return;
     }
-    const ddd = parseInt(digits.substring(0, 2));
-    if (ddd < 11 || ddd > 99) {
-      if (showError) {
-        setErrors(prev => ({ ...prev, whatsapp: "DDD inválido" }));
-      }
-      return false;
+
+    if (fulfillmentType === 'dine_in' && !selectedTable) {
+      toast.error("Por favor selecciona tu número de mesa");
+      return;
     }
-    setErrors(prev => ({ ...prev, whatsapp: "" }));
-    return true;
-  };
 
-  const handleNameContinue = () => {
-    if (validateName(name)) {
-      setName(capitalizeName(name));
-      setStep('WHATSAPP');
-    }
-  };
-
-  const handleWhatsAppContinue = () => {
-    if (validateWhatsApp(whatsapp)) {
-      if (isStaff) {
-        handleGoToPayment();
-      } else {
-        setStep('CONFIRM');
-      }
-    }
-  };
-
-  const handleWhatsAppInput = (value: string) => {
-    const digits = value.replace(/\D/g, '');
-    setWhatsapp(digits.slice(0, 11));
-  };
-
-  useEffect(() => {
-    if (step === 'CONFIRM') {
-      const timer = setTimeout(() => {
-        setStep('REVIEW');
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
-  const handleGoToPayment = async () => {
     setIsSubmitting(true);
-    
+
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const userRole = user?.user_metadata?.role;
-      const isWaiter = userRole === 'waiter';
-      const isAdmin = userRole === 'admin' || userRole === 'cashier';
-      const isStaff = isWaiter || isAdmin;
-      
-      const capitalizedName = capitalizeName(name);
-      const normalizedPhone = normalizePhone(whatsapp);
-      if (!normalizedPhone) {
-        toast.error("Número de WhatsApp inválido");
-        return;
-      }
+      const order = createOrder({
+        venue_id: venue.id,
+        fulfillment_type: fulfillmentType,
+        table_number: fulfillmentType === 'dine_in' ? (selectedTable || '1') : undefined,
+        customer_name: customerName.trim(),
+        customer_phone: customerPhone.trim() || '+591 70000000',
+        items: cartState.items.map(item => ({
+          item_id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          notes: orderNotes || undefined,
+        })),
+        subtotal: totalAmount,
+        discount: 0,
+        total: totalAmount,
+        payment_method: paymentMethod,
+        payment_status: paymentMethod === 'qr_simple' ? 'paid' : 'pending',
+      });
 
-      try {
-        const { error: customerError } = await supabase
-          .from('customers')
-          .upsert({
-            whatsapp: normalizedPhone,
-            name: capitalizedName,
-            last_order_date: new Date().toISOString()
-          }, {
-            onConflict: 'whatsapp'
-          });
-
-        if (customerError) {
-          console.error('Error upserting customer:', customerError);
-        }
-      } catch (err) {
-        console.error('Exception upserting customer:', err);
-      }
-
-      const totalAmount = cartState.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const commissionAmount = isWaiter ? totalAmount * 0.1 : 0;
-
-      const orderData: any = {
-        customer_name: capitalizedName,
-        customer_phone: normalizedPhone,
-        table_number: '-',
-        status: isStaff ? 'in_preparation' : 'pending',
-        payment_status: 'pending',
-        total_amount: totalAmount
-      };
-
-      if (isWaiter && user) {
-        orderData.waiter_id = user.id;
-        orderData.commission_amount = commissionAmount;
-        orderData.created_by_waiter = true;
-      }
-      
-      if (isAdmin && user) {
-        orderData.created_by_cashier = true;
-        orderData.cashier_id = user.id;
-      }
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(orderData)
-        .select()
-        .single();
-
-      if (orderError || !order) {
-        console.error('Error creating order:', orderError);
-        toast.error("Erro ao criar pedido. Tente novamente.");
-        return;
-      }
-
-      const orderItems = cartState.items.map((item) => ({
-        order_id: order.id,
-        menu_item_id: item.id,
-        quantity: item.quantity,
-        unit_price: item.price,
-        item_name: item.name
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        console.error('Error creating order items:', itemsError);
-        toast.error("Erro ao criar itens do pedido. Tente novamente.");
-        return;
-      }
-
-      sessionStorage.setItem('customerInfo', JSON.stringify({
-        name: name.trim(),
-        phone: normalizedPhone
-      }));
-
+      setCreatedOrderNumber(order.order_number);
+      setIsSuccess(true);
       clearCart();
+      toast.success("¡Pedido enviado a la cocina de Moe's con éxito!");
 
-      if (isStaff) {
-        toast.success("Pedido criado com sucesso!");
-        
-        setTimeout(() => {
-          (async () => {
-            try {
-              await notificationTriggers.onOrderPreparing(order.id);
-              console.log('✅ WhatsApp notification sent for staff order:', order.id);
-            } catch (notifError) {
-              console.error('❌ Failed to send WhatsApp notification:', notifError);
-            }
-          })().catch(err => {
-            console.error('❌ WhatsApp notification error (caught):', err);
-          });
-        }, 100);
-
-        if (isWaiter) {
-          navigate('/waiter/dashboard');
-        } else {
-          navigate('/staff/cashier');
-        }
-      } else {
-        toast.success("Pedido criado com sucesso!");
-        navigate(`/payment/${order.id}`);
-
-        setTimeout(() => {
-          (async () => {
-            try {
-              const baseUrl = window.location.origin;
-              await notificationTriggers.onOrderCreatedWithLinks(order.id, baseUrl);
-              console.log('✅ WhatsApp notification triggered for order:', order.id);
-            } catch (notifError) {
-              console.error('❌ Failed to trigger WhatsApp notification:', notifError);
-            }
-          })().catch(err => {
-            console.error('❌ WhatsApp notification error (caught):', err);
-          });
-        }, 100);
-      }
-      
-    } catch (error) {
-      console.error('Exception in handleGoToPayment:', error);
-      toast.error("Erro ao processar. Tente novamente.");
+    } catch (err) {
+      console.error('Error creating order:', err);
+      toast.error("Error al procesar el pedido. Intenta nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-card border-2 border-emerald-500/40 shadow-2xl text-center space-y-5 animate-in zoom-in-95">
+          <div className="w-20 h-20 rounded-full bg-emerald-500/15 text-emerald-500 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-12 h-12" />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-500">
+              ¡Pedido Confirmado!
+            </span>
+            <h1 className="text-3xl font-black text-foreground">
+              {createdOrderNumber}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {fulfillmentType === 'dine_in'
+                ? `Enviado a la cocina para la Mesa ${selectedTable || '1'}`
+                : 'En preparación para Retiro en Barra'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-muted/40 border border-border text-left space-y-2 text-xs">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Cliente:</span>
+              <span className="font-bold">{customerName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Lugar:</span>
+              <span className="font-bold">{venue.name} SCZ</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total Pagado:</span>
+              <span className="font-black text-amber-500">{venue.currency} {totalAmount}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Método:</span>
+              <span className="font-bold uppercase">{paymentMethod.replace('_', ' ')}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <Button
+              onClick={() => navigate('/menu')}
+              className="w-full bg-primary text-primary-foreground font-bold text-xs h-11 rounded-xl shadow-md"
+            >
+              Pedir Más Cosas
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/')}
+              className="w-full text-xs h-11 rounded-xl"
+            >
+              Volver al Inicio
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/5">
+    <div className="min-h-screen bg-background text-foreground flex flex-col pb-16">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary/95 to-secondary text-white shadow-2xl sticky top-0 z-10 border-b-4 border-secondary">
-        <div className="max-w-2xl mx-auto px-4 py-4 sm:py-6">
+      <div className="bg-gradient-to-r from-amber-600 via-red-600 to-amber-600 text-white shadow-md sticky top-0 z-30">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20 transition-all rounded-lg"
+              className="text-white hover:bg-white/20 rounded-xl"
               onClick={() => navigate("/menu")}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-display font-bold uppercase tracking-wider">Finalizar Pedido</h1>
-              {name && (
-                <p className="text-white/90 text-sm mt-0.5 font-body">{name}</p>
-              )}
+            <div>
+              <h1 className="text-base font-black uppercase tracking-tight">Tu Pedido • {venue.name}</h1>
+              <p className="text-xs text-white/80">Santa Cruz de la Sierra</p>
             </div>
           </div>
+
+          <span className="text-xs font-black bg-black/30 px-2.5 py-1 rounded-full border border-white/20">
+            {fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : 'Retiro en Barra'}
+          </span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-md mx-auto p-4 pt-8 pb-12 space-y-4">
-        <AnimatePresence mode="wait">
-          {step === 'NAME' && (
-            <motion.div
-              key="name"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={transition}
-            >
-              <Card className="p-6 sm:p-8 shadow-lg border-0 rounded-2xl bg-white">
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-secondary to-secondary/80 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <span className="text-3xl">👋</span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-display font-bold text-primary mb-2 uppercase tracking-wider">
-                    {isStaff ? "Novo Pedido" : welcomePhrase}
-                  </h2>
-                  <p className="text-foreground/70 font-body text-sm">
-                    {isStaff ? "Informe o nome do cliente" : "Como você gostaria de ser chamado?"}
-                  </p>
+      <main className="max-w-3xl mx-auto px-4 py-6 w-full flex-1 grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Left Column: Order Form */}
+        <form onSubmit={handleCreateOrder} className="md:col-span-7 space-y-6">
+          
+          {/* Fulfillment Mode */}
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-3 shadow-xs">
+            <label className="text-xs font-black text-foreground uppercase tracking-wider block">
+              1. Tipo de Entrega
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFulfillmentType('dine_in')}
+                className={`p-3 rounded-xl border-2 text-left flex items-center gap-2.5 transition-all ${
+                  fulfillmentType === 'dine_in'
+                    ? 'border-primary bg-primary/10 text-foreground font-bold'
+                    : 'border-border bg-muted/20 text-muted-foreground'
+                }`}
+              >
+                <UtensilsCrossed className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-xs">
+                  <p className="font-bold leading-none">En Mesa</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Mesa {selectedTable || '1'}</p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="name" className="text-base font-semibold text-foreground font-body">
-                      Nome
-                    </Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="ex: João"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (touched.name) {
-                          validateName(e.target.value, true);
-                        }
-                      }}
-                      onBlur={() => {
-                        setTouched(prev => ({ ...prev, name: true }));
-                        validateName(name, true);
-                      }}
-                      onKeyPress={(e) => e.key === 'Enter' && handleNameContinue()}
-                      className="mt-2 text-lg h-14 border-2 border-accent/30 rounded-xl focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-all"
-                      autoFocus
-                    />
-                    {touched.name && errors.name && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1 font-body">
-                        <span>⚠️</span> {errors.name}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    onClick={handleNameContinue}
-                    disabled={name.trim().length < 2}
-                    className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white font-display uppercase tracking-wider py-6 text-lg shadow-lg hover:shadow-xl transition-all rounded-xl disabled:opacity-50"
-                  >
-                    Continuar →
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          )}
+              </button>
 
-          {step === 'WHATSAPP' && (
-            <motion.div
-              key="whatsapp"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={transition}
-            >
-              <Card className="p-6 sm:p-8 shadow-lg border-0 rounded-2xl bg-white">
-                <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <span className="text-3xl">📱</span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl font-display font-bold text-primary mb-2 uppercase tracking-wider">
-                    {isStaff ? "WhatsApp do Cliente" : `Ótimo, ${name}!`}
-                  </h2>
-                  <p className="text-foreground/70 font-body text-sm">
-                    {isStaff 
-                      ? "Informe o WhatsApp do cliente para enviar notificações" 
-                      : "Agora precisamos do seu WhatsApp para te avisar quando o pedido estiver pronto"}
-                  </p>
+              <button
+                type="button"
+                onClick={() => setFulfillmentType('pickup')}
+                className={`p-3 rounded-xl border-2 text-left flex items-center gap-2.5 transition-all ${
+                  fulfillmentType === 'pickup'
+                    ? 'border-primary bg-primary/10 text-foreground font-bold'
+                    : 'border-border bg-muted/20 text-muted-foreground'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4 text-primary shrink-0" />
+                <div className="text-xs">
+                  <p className="font-bold leading-none">Para Llevar / Barra</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Retiras en caja</p>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="whatsapp" className="text-base font-semibold text-foreground font-body">
-                      WhatsApp (com DDD)
-                    </Label>
-                    <Input
-                      id="whatsapp"
-                      type="tel"
-                      placeholder="(71) 98765-4321"
-                      value={whatsapp}
-                      onChange={(e) => {
-                        handleWhatsAppInput(e.target.value);
-                        if (touched.whatsapp) {
-                          validateWhatsApp(e.target.value, true);
-                        }
-                      }}
-                      onBlur={() => {
-                        setTouched(prev => ({ ...prev, whatsapp: true }));
-                        validateWhatsApp(whatsapp, true);
-                      }}
-                      onKeyPress={(e) => e.key === 'Enter' && handleWhatsAppContinue()}
-                      className="mt-2 text-lg h-14 border-2 border-accent/30 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
-                      autoFocus
-                    />
-                    <p className="text-xs text-accent/70 mt-1 font-body">Digite apenas números (DDD + número)</p>
-                    {touched.whatsapp && errors.whatsapp && (
-                      <p className="text-red-500 text-sm mt-2 flex items-center gap-1 font-body">
-                        <span>⚠️</span> {errors.whatsapp}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    onClick={handleWhatsAppContinue}
-                    disabled={whatsapp.replace(/\D/g, '').length !== 11}
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-display uppercase tracking-wider py-6 text-lg shadow-lg hover:shadow-xl transition-all rounded-xl disabled:opacity-50"
-                  >
-                    Confirmar →
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
-          )}
+              </button>
+            </div>
 
-          {step === 'CONFIRM' && (
-            <motion.div
-              key="confirm"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={transition}
-            >
-              <Card className="p-8 shadow-lg text-center border-0 rounded-2xl bg-gradient-to-br from-green-50 to-green-100">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 animate-bounce shadow-lg">
-                  <CheckCircle className="w-12 h-12" />
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-display font-bold text-green-700 mb-3 uppercase tracking-wider">
-                  Tudo certo! ✨
-                </h2>
-                <p className="text-lg text-green-600 font-body">
-                  Vamos te avisar pelo WhatsApp quando seu pedido estiver pronto!
-                </p>
-              </Card>
-            </motion.div>
-          )}
+            {fulfillmentType === 'dine_in' && (
+              <div className="pt-1">
+                <Label className="text-xs text-muted-foreground mb-1 block">Número de Mesa:</Label>
+                <Input
+                  value={selectedTable || ""}
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  placeholder="Ej. 4, 12, VIP 1"
+                  className="text-xs h-9"
+                  required
+                />
+              </div>
+            )}
+          </div>
 
-          {step === 'REVIEW' && (
-            <motion.div
-              key="review"
-              variants={pageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={transition}
-            >
-              <Card className="p-6 sm:p-8 shadow-lg border-0 rounded-2xl bg-white">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl sm:text-3xl font-display font-bold text-primary mb-2 uppercase tracking-wider">
-                    Seu Pedido, {name}!
-                  </h2>
-                  <p className="text-foreground/70 font-body text-sm">Confira se está tudo certo antes de prosseguir</p>
-                </div>
-                <div className="space-y-4">
-                  {/* Cart items */}
-                  <div className="bg-gradient-to-br from-background to-background/50 rounded-xl p-4 space-y-3 border-2 border-accent/20">
-                    {cartState.items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center py-2 border-b border-accent/10 last:border-0">
-                        <div className="flex-1">
-                          <p className="font-semibold text-foreground font-body">{item.name}</p>
-                          <p className="text-sm text-accent/70 font-body">R$ {item.price.toFixed(2)} cada</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-foreground font-body">x{item.quantity}</p>
-                          <p className="text-sm font-bold text-secondary font-body">
-                            R$ {(item.price * item.quantity).toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+          {/* Customer Details */}
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-3 shadow-xs">
+            <label className="text-xs font-black text-foreground uppercase tracking-wider block">
+              2. Tus Datos
+            </label>
+            <div className="space-y-2.5">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">¿A nombre de quién sale el pedido?</Label>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Ej. Fernando Aguilera"
+                  className="text-xs h-10"
+                  required
+                />
+              </div>
 
-                  {/* Total */}
-                  <div className="bg-gradient-to-r from-primary to-secondary rounded-xl p-5 flex justify-between items-center shadow-lg">
-                    <span className="font-display font-bold text-xl text-white uppercase tracking-wider">Total</span>
-                    <span className="font-bold text-3xl text-white">
-                      R$ {cartState.items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-                    </span>
-                  </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Celular / WhatsApp (opcional para aviso):</Label>
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="+591 78000000"
+                  className="text-xs h-10"
+                />
+              </div>
 
-                  {/* Action buttons */}
-                  <div className="space-y-3 pt-4">
-                    <Button
-                      onClick={handleGoToPayment}
-                      disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:from-secondary/90 hover:to-secondary text-white font-display uppercase tracking-wider py-7 text-lg shadow-lg hover:shadow-xl transition-all rounded-xl disabled:opacity-50"
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center gap-2">
-                          <span className="animate-spin">⏳</span>
-                          Processando...
-                        </span>
-                      ) : (
-                        <>
-                          💳 Ir para Pagamento
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => navigate("/menu")}
-                      variant="outline"
-                      className="w-full py-6 text-lg font-display uppercase tracking-wider border-2 border-accent/30 hover:bg-primary/5 hover:border-secondary transition-colors rounded-xl"
-                    >
-                      ← Voltar ao Cardápio
-                    </Button>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Notas para cocina / barra (opcional):</Label>
+                <Textarea
+                  value={orderNotes}
+                  onChange={(e) => setOrderNotes(e.target.value)}
+                  placeholder="Ej. Salchipapa con salsa de ajo extra, trago con bastante hielo..."
+                  className="text-xs min-h-[70px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Selection */}
+          <div className="p-4 rounded-2xl bg-card border border-border space-y-3 shadow-xs">
+            <label className="text-xs font-black text-foreground uppercase tracking-wider block">
+              3. Método de Pago en Bolivia
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('qr_simple')}
+                className={`p-3 rounded-xl border-2 text-center flex flex-col items-center gap-1.5 transition-all ${
+                  paymentMethod === 'qr_simple'
+                    ? 'border-primary bg-primary/10 text-foreground font-bold'
+                    : 'border-border bg-muted/20 text-muted-foreground'
+                }`}
+              >
+                <QrCode className="w-5 h-5 text-primary" />
+                <span className="text-[11px] font-bold">QR Simple / Banco</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('cash')}
+                className={`p-3 rounded-xl border-2 text-center flex flex-col items-center gap-1.5 transition-all ${
+                  paymentMethod === 'cash'
+                    ? 'border-primary bg-primary/10 text-foreground font-bold'
+                    : 'border-border bg-muted/20 text-muted-foreground'
+                }`}
+              >
+                <Banknote className="w-5 h-5 text-emerald-500" />
+                <span className="text-[11px] font-bold">Efectivo en Bs.</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('card')}
+                className={`p-3 rounded-xl border-2 text-center flex flex-col items-center gap-1.5 transition-all ${
+                  paymentMethod === 'card'
+                    ? 'border-primary bg-primary/10 text-foreground font-bold'
+                    : 'border-border bg-muted/20 text-muted-foreground'
+                }`}
+              >
+                <CreditCard className="w-5 h-5 text-amber-500" />
+                <span className="text-[11px] font-bold">Tarjeta POS</span>
+              </button>
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isSubmitting || cartState.items.length === 0}
+            className="w-full bg-gradient-to-r from-amber-500 via-red-600 to-amber-600 hover:from-amber-600 hover:to-red-700 text-white font-black text-sm h-14 rounded-2xl shadow-xl hover:scale-[1.01] transition-all"
+          >
+            {isSubmitting ? 'Enviando a Cocina...' : `Confirmar Pedido • ${venue.currency} ${totalAmount}`}
+          </Button>
+        </form>
+
+        {/* Right Column: Order Summary */}
+        <div className="md:col-span-5 space-y-4">
+          <div className="p-4 rounded-2xl bg-card border border-border shadow-md space-y-3 sticky top-20">
+            <h3 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center justify-between">
+              <span>Resumen ({cartState.items.length} ítems)</span>
+              <button
+                onClick={clearCart}
+                className="text-[11px] text-red-500 hover:underline font-normal flex items-center gap-1"
+              >
+                <Trash2 className="w-3 h-3" /> Vaciar
+              </button>
+            </h3>
+
+            {/* Item list */}
+            <div className="divide-y divide-border/60 max-h-80 overflow-y-auto pr-1">
+              {cartState.items.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-6 text-center">Tu carrito está vacío</p>
+              ) : (
+                cartState.items.map((item) => (
+                  <div key={item.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="text-xs font-bold text-foreground line-clamp-1">{item.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{venue.currency} {item.price} c/u</p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(item.id)}
+                        className="w-6 h-6 rounded bg-muted hover:bg-muted/80 text-foreground flex items-center justify-center"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="text-xs font-black w-4 text-center">{item.quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => addItem(item)}
+                        className="w-6 h-6 rounded bg-primary text-primary-foreground flex items-center justify-center"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    <div className="text-right min-w-[55px]">
+                      <span className="text-xs font-black text-amber-500">
+                        {venue.currency} {item.price * item.quantity}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+                ))
+              )}
+            </div>
+
+            {/* Total breakdown */}
+            <div className="pt-3 border-t border-border space-y-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Subtotal</span>
+                <span>{venue.currency} {totalAmount}</span>
+              </div>
+              <div className="flex justify-between text-xs text-emerald-500 font-medium">
+                <span>Servicio digital MIMENU</span>
+                <span>¡Gratis!</span>
+              </div>
+              <div className="flex justify-between text-base font-black text-foreground pt-2 border-t border-border/60">
+                <span>Total a Pagar</span>
+                <span className="text-xl text-amber-500">{venue.currency} {totalAmount}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
