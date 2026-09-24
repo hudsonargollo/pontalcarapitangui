@@ -17,6 +17,7 @@ import { MimenuHeader } from '@/components/MimenuHeader';
 import { HotnessIndicator } from '@/components/HotnessIndicator';
 import { ItemReviewDialog } from '@/components/ItemReviewDialog';
 import { CyclingOffersBanner } from '@/components/CyclingOffersBanner';
+import { CartDrawerExpress } from '@/components/CartDrawerExpress';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -30,6 +31,7 @@ const Menu: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [onlyHot, setOnlyHot] = useState<boolean>(false);
   const [selectedReviewItem, setSelectedReviewItem] = useState<MenuItemDetail | null>(null);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   useEffect(() => {
     document.title = `${venue.name} — Menú Digital & Pedidos Santa Cruz`;
@@ -325,11 +327,11 @@ const Menu: React.FC = () => {
         )}
       </main>
 
-      {/* Floating Bottom Cart Bar for Mobile */}
+      {/* Floating Bottom Cart Bar for Mobile (Opens Express Drawer) */}
       {getTotalItems() > 0 && (
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto">
           <button
-            onClick={() => navigate('/checkout')}
+            onClick={() => setIsCartDrawerOpen(true)}
             className="w-full bg-gradient-to-r from-amber-500 via-red-600 to-amber-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/20 hover:scale-[1.02] transition-transform animate-in slide-in-from-bottom"
           >
             <div className="flex items-center gap-3">
@@ -340,7 +342,7 @@ const Menu: React.FC = () => {
                 <p className="text-xs font-bold uppercase tracking-wider text-amber-200">
                   {fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : 'Retiro en Barra'}
                 </p>
-                <p className="text-sm font-black">Ver Pedido & Pagar</p>
+                <p className="text-sm font-black">Ver Pedido & Confirmar</p>
               </div>
             </div>
 
@@ -357,6 +359,12 @@ const Menu: React.FC = () => {
         item={selectedReviewItem}
         isOpen={!!selectedReviewItem}
         onClose={() => setSelectedReviewItem(null)}
+      />
+
+      {/* Express Slide-Over Cart Drawer */}
+      <CartDrawerExpress
+        isOpen={isCartDrawerOpen}
+        onClose={() => setIsCartDrawerOpen(false)}
       />
     </div>
   );

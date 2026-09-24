@@ -5,6 +5,7 @@ import { useMimenu } from '@/lib/mimenuContext';
 import { useCart } from '@/lib/cartContext';
 import { Button } from '@/components/ui/button';
 import { TableSelectorModal } from '@/components/TableSelectorModal';
+import { CartDrawerExpress } from '@/components/CartDrawerExpress';
 
 interface MimenuHeaderProps {
   onSearchChange?: (term: string) => void;
@@ -21,7 +22,7 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
   const { venue, selectedTable, fulfillmentType } = useMimenu();
   const { getTotalItems, getTotalPrice } = useCart();
   const [isTableModalOpen, setIsTableModalOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   const totalCartItems = getTotalItems();
   const totalCartPrice = getTotalPrice();
@@ -38,6 +39,9 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
           </div>
 
           <div className="hidden sm:flex items-center gap-3">
+            <Link to="/admin/ai" className="hover:underline flex items-center gap-1 opacity-90 hover:opacity-100 font-bold">
+              <Sparkles className="w-3 h-3 text-yellow-300" /> Copiloto AI
+            </Link>
             <Link to="/admin" className="hover:underline flex items-center gap-1 opacity-90 hover:opacity-100">
               <ShieldAlert className="w-3 h-3" /> Panel Admin
             </Link>
@@ -57,7 +61,7 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
                   {venue.name}
                 </span>
                 <span className="text-[10px] font-extrabold uppercase bg-amber-500/15 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/30">
-                  MIMENU
+                  SCZ
                 </span>
               </div>
               <p className="text-[11px] text-muted-foreground line-clamp-1">
@@ -85,10 +89,10 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
               </span>
             </button>
 
-            {/* Cart Button */}
+            {/* Cart Button with Slide-Over Drawer */}
             <Button
               size="sm"
-              onClick={() => navigate('/checkout')}
+              onClick={() => setIsCartDrawerOpen(true)}
               className={`relative font-bold text-xs shadow-md transition-all ${
                 totalCartItems > 0
                   ? 'bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white animate-pulse'
@@ -99,7 +103,7 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
               <span>
                 {totalCartItems > 0
                   ? `${venue.currency} ${totalCartPrice}`
-                  : 'Carrito'}
+                  : 'Comanda'}
               </span>
               {totalCartItems > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-background shadow-xs">
@@ -139,6 +143,12 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
       <TableSelectorModal
         isOpen={isTableModalOpen}
         onClose={() => setIsTableModalOpen(false)}
+      />
+
+      {/* Express Slide-Over Cart Drawer */}
+      <CartDrawerExpress
+        isOpen={isCartDrawerOpen}
+        onClose={() => setIsCartDrawerOpen(false)}
       />
     </>
   );
