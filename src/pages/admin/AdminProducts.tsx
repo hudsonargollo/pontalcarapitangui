@@ -20,11 +20,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen, Trash2 } from 'lucide-react';
+import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen, Trash2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SortingDialog } from '@/components/SortingDialog';
 import { CategoryManagement } from '@/components/CategoryManagement';
+import { BannerManagement } from '@/components/admin/BannerManagement';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import AdminLayout from '@/components/AdminLayout';
 
@@ -47,6 +48,8 @@ interface Category {
 
 const AdminProducts = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'products';
   const { isAdmin } = useAdminCheck();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -391,7 +394,11 @@ const AdminProducts = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="products" className="w-full">
+        <Tabs
+          value={currentTab}
+          onValueChange={(val) => setSearchParams({ tab: val })}
+          className="w-full"
+        >
           <TabsList className="inline-flex h-11 items-center justify-center rounded-lg bg-white/80 backdrop-blur-sm p-1 text-muted-foreground shadow-lg border-2 border-gray-200 mb-6">
             <TabsTrigger 
               value="products" 
@@ -406,6 +413,13 @@ const AdminProducts = () => {
             >
               <FolderOpen className="w-4 h-4" />
               Categorias
+            </TabsTrigger>
+            <TabsTrigger 
+              value="banners" 
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-6 py-2 text-sm font-display uppercase tracking-wider ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary/50 data-[state=active]:to-secondary data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-primary/5 gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              Banners de Destaque
             </TabsTrigger>
           </TabsList>
 
@@ -561,6 +575,10 @@ const AdminProducts = () => {
               categories={categories}
               onCategoriesChange={loadData}
             />
+          </TabsContent>
+
+          <TabsContent value="banners" className="space-y-6">
+            <BannerManagement />
           </TabsContent>
         </Tabs>
       </div>

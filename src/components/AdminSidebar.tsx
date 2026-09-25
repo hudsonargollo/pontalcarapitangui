@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import {
   ChefHat,
   ShoppingBag,
+  Sparkles,
   BarChart3,
   Users,
   MessageCircle,
@@ -32,6 +33,7 @@ const AdminSidebar = () => {
     { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/admin', description: 'Visão geral' },
     { label: 'Pedidos', icon: <ChefHat className="w-5 h-5" />, path: '/cashier', description: 'Gerenciar pedidos' },
     { label: 'Produtos', icon: <ShoppingBag className="w-5 h-5" />, path: '/admin/products', description: 'Cardápio' },
+    { label: 'Banners', icon: <Sparkles className="w-5 h-5" />, path: '/admin/banners', description: 'Destaques do cardápio' },
     { label: 'Garçons', icon: <Users className="w-5 h-5" />, path: '/waiter-management', description: 'Equipe' },
     { label: 'Relatórios', icon: <BarChart3 className="w-5 h-5" />, path: '/reports', description: 'Análises' },
     { label: 'WhatsApp', icon: <MessageCircle className="w-5 h-5" />, path: '/whatsapp-admin', description: 'Mensagens' },

@@ -13,9 +13,6 @@ import {
   UtensilsCrossed,
   BellRing,
   Check,
-  Edit3,
-  Save,
-  RotateCcw,
   Menu as MenuIcon,
   LayoutGrid,
 } from "lucide-react";
@@ -30,97 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-
-// Image imports
-import acaiImg from "@/assets/menu/acai.jpg";
-import blueLagoonImg from "@/assets/menu/blue-lagoon.jpg";
-import brigaderoImg from "@/assets/menu/brigadeiro.jpg";
-import caiprinhaImg from "@/assets/menu/caipirinha.jpg";
-import caipitaoImg from "@/assets/menu/caipitao.jpg";
-import carnesolImg from "@/assets/menu/carne-sol.jpg";
-import cassavafriesImg from "@/assets/menu/cassava-fries.jpg";
-import cevicheImg from "@/assets/menu/ceviche.jpg";
-import chefchoiceImg from "@/assets/menu/chef-choice.jpg";
-import chickenparmeImg from "@/assets/menu/chicken-parmesan.jpg";
-import cocadaImg from "@/assets/menu/cocada.jpg";
-import codcakesImg from "@/assets/menu/cod-cakes.jpg";
-import crabshellsImg from "@/assets/menu/crab-shells.jpg";
-import crispyshrimpImg from "@/assets/menu/crispy-shrimp.jpg";
-import filetgorgonzolaImg from "@/assets/menu/filet-gorgonzola.jpg";
-import filetmignonappImg from "@/assets/menu/filet-mignon-appetizer.jpg";
-import fishstripsImg from "@/assets/menu/fish-strips.jpg";
-import friescarapitanguiImg from "@/assets/menu/fries-carapitangui.jpg";
-import friesImg from "@/assets/menu/fries.jpg";
-import frozensoftImg from "@/assets/menu/frozen-soft.jpg";
-import ginloveImg from "@/assets/menu/gin-love.jpg";
-import grilledfishImg from "@/assets/menu/grilled-fish.jpg";
-import heinekenImg from "@/assets/menu/heineken.jpg";
-import juiceImg from "@/assets/menu/juice.jpg";
-import kidsbeefImg from "@/assets/menu/kids-beef.jpg";
-import kidsfishImg from "@/assets/menu/kids-fish.jpg";
-import laeleImg from "@/assets/menu/la-ele.jpg";
-import mojitoImg from "@/assets/menu/mojito.jpg";
-import neptunetideImg from "@/assets/menu/neptune-tide.jpg";
-import octopusvinaigreImg from "@/assets/menu/octopus-vinaigrette.jpg";
-import originalImg from "@/assets/menu/original.jpg";
-import oxemateImg from "@/assets/menu/oxe-mate.jpg";
-import popsicleImg from "@/assets/menu/popsicle.jpg";
-import seafoodmixImg from "@/assets/menu/seafood-mix.jpg";
-import shrimpcarapitanguiImg from "@/assets/menu/shrimp-carapitangui.jpg";
-import squiddoreeImg from "@/assets/menu/squid-doree.jpg";
-import tadalasourImg from "@/assets/menu/tadala-sour.jpg";
-import tapiocacubesImg from "@/assets/menu/tapioca-cubes.jpg";
-import tropicalsalmonImg from "@/assets/menu/tropical-salmon.jpg";
-import waterImg from "@/assets/menu/water.jpg";
-
-const imageMap: Record<string, string> = {
-  "acai.jpg": acaiImg,
-  "blue-lagoon.jpg": blueLagoonImg,
-  "brigadeiro.jpg": brigaderoImg,
-  "caipirinha.jpg": caiprinhaImg,
-  "caipitao.jpg": caipitaoImg,
-  "carne-sol.jpg": carnesolImg,
-  "cassava-fries.jpg": cassavafriesImg,
-  "ceviche.jpg": cevicheImg,
-  "chef-choice.jpg": chefchoiceImg,
-  "chicken-parmesan.jpg": chickenparmeImg,
-  "cocada.jpg": cocadaImg,
-  "cod-cakes.jpg": codcakesImg,
-  "crab-shells.jpg": crabshellsImg,
-  "crispy-shrimp.jpg": crispyshrimpImg,
-  "filet-gorgonzola.jpg": filetgorgonzolaImg,
-  "filet-mignon-appetizer.jpg": filetmignonappImg,
-  "fish-strips.jpg": fishstripsImg,
-  "fries-carapitangui.jpg": friescarapitanguiImg,
-  "fries.jpg": friesImg,
-  "frozen-soft.jpg": frozensoftImg,
-  "gin-love.jpg": ginloveImg,
-  "grilled-fish.jpg": grilledfishImg,
-  "heineken.jpg": heinekenImg,
-  "juice.jpg": juiceImg,
-  "kids-beef.jpg": kidsbeefImg,
-  "kids-fish.jpg": kidsfishImg,
-  "la-ele.jpg": laeleImg,
-  "mojito.jpg": mojitoImg,
-  "neptune-tide.jpg": neptunetideImg,
-  "octopus-vinaigrette.jpg": octopusvinaigreImg,
-  "original.jpg": originalImg,
-  "oxe-mate.jpg": oxemateImg,
-  "popsicle.jpg": popsicleImg,
-  "seafood-mix.jpg": seafoodmixImg,
-  "shrimp-carapitangui.jpg": shrimpcarapitanguiImg,
-  "squid-doree.jpg": squiddoreeImg,
-  "tadala-sour.jpg": tadalasourImg,
-  "tapioca-cubes.jpg": tapiocacubesImg,
-  "tropical-salmon.jpg": tropicalsalmonImg,
-  "water.jpg": waterImg,
-};
-
-function getImageUrl(imagePath?: string) {
-  if (!imagePath) return "/placeholder.svg";
-  const filename = imagePath.split("/").pop() || "";
-  return imageMap[filename] || imagePath;
-}
+import { useBanners, getImageUrl, PromoBanner } from "@/lib/banners";
 
 // Category icons map
 const categoryIcons: Record<string, string> = {
@@ -136,85 +43,6 @@ const categoryIcons: Record<string, string> = {
   cervejas: "🍺",
   "sem-alcool": "🥤",
 };
-
-// Banner Type & Defaults
-export interface PromoBanner {
-  id: string;
-  badge: { pt: string; en: string };
-  title: { pt: string; en: string };
-  subtitle: { pt: string; en: string };
-  location: { pt: string; en: string };
-  image: string;
-  categoryTarget?: string;
-  isActive: boolean;
-}
-
-const DEFAULT_BANNERS: PromoBanner[] = [
-  {
-    id: "banner-1",
-    badge: { pt: "Destaque do Chef", en: "Chef's Special" },
-    title: {
-      pt: "Frutos do Mar Frescos & Sunset",
-      en: "Fresh Seafood & Sunset Vibes",
-    },
-    subtitle: {
-      pt: "Camarões gratinados, peixes frescos e o visual inesquecível do Rio Carapitangui.",
-      en: "Gratinéed shrimp, fresh catch, and stunning views by Rio Carapitangui.",
-    },
-    location: { pt: "Barra Grande • Bahia", en: "Barra Grande • Bahia" },
-    image: shrimpcarapitanguiImg,
-    categoryTarget: "especial",
-    isActive: true,
-  },
-  {
-    id: "banner-2",
-    badge: { pt: "Mixologia Autoral", en: "Signature Mixology" },
-    title: {
-      pt: "Drinks Pontal Experiência",
-      en: "Pontal Signature Drinks",
-    },
-    subtitle: {
-      pt: "Cocktails exclusivos preparados com ingredientes tropicais e alta mixologia.",
-      en: "Exclusive cocktails crafted with fresh tropical notes and premium spirits.",
-    },
-    location: { pt: "Bar da Praia & Lounge", en: "Beach Bar & Lounge" },
-    image: blueLagoonImg,
-    categoryTarget: "drinks-experiencia",
-    isActive: true,
-  },
-  {
-    id: "banner-3",
-    badge: { pt: "Para Compartilhar", en: "To Share" },
-    title: {
-      pt: "Dadinhos de Tapioca & Petiscos",
-      en: "Tapioca Cubes & Beach Bites",
-    },
-    subtitle: {
-      pt: "Porções crocantes perfeitas para curtir com uma cerveja artesanal ou drink gelado.",
-      en: "Crispy appetizers made for sharing with cold beer or fresh cocktails.",
-    },
-    location: { pt: "Quiosque & Bangalôs", en: "Kiosk & Bungalows" },
-    image: tapiocacubesImg,
-    categoryTarget: "petiscos",
-    isActive: true,
-  },
-  {
-    id: "banner-4",
-    badge: { pt: "Especial da Casa", en: "House Special" },
-    title: {
-      pt: "Misto do Mar para 2 Pessoas",
-      en: "Seafood Mix for Two",
-    },
-    subtitle: {
-      pt: "Polvo, camarão, lula e peixe branco com arroz aromático e legumes salteados.",
-      en: "Octopus, shrimp, squid and white fish served with savory rice and sautéed veggies.",
-    },
-    location: { pt: "Almoço & Jantar", en: "Lunch & Dinner" },
-    image: seafoodmixImg,
-    categoryTarget: "especial",
-    isActive: true,
-  },
-];
 
 interface LiveItem extends BaseMenuItem {
   categoryKey: string;
@@ -249,21 +77,9 @@ export default function LiveMenu() {
   // Category Drawer State (Hamburger Menu)
   const [isCategoryDrawerOpen, setIsCategoryDrawerOpen] = useState(false);
 
-  // Banners State & Carousel
-  const [banners, setBanners] = useState<PromoBanner[]>(() => {
-    const saved = localStorage.getItem("pontal_live_banners");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing saved banners", e);
-      }
-    }
-    return DEFAULT_BANNERS;
-  });
+  // Banners Hook & Carousel State
+  const { banners, activeBanners } = useBanners();
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [isBannerAdminOpen, setIsBannerAdminOpen] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<PromoBanner | null>(null);
 
   // Modal / Detail States
   const [selectedItem, setSelectedItem] = useState<LiveItem | null>(null);
@@ -295,9 +111,6 @@ export default function LiveMenu() {
       setCurrentTableId(urlTable);
     }
   }, [searchParams]);
-
-  // Auto-rotate active banner carousel
-  const activeBanners = useMemo(() => banners.filter((b) => b.isActive), [banners]);
 
   useEffect(() => {
     if (activeBanners.length <= 1) return;
@@ -591,22 +404,6 @@ export default function LiveMenu() {
     setWaiterNotes("");
   };
 
-  // Banner Admin Handlers
-  const handleSaveBanner = (updated: PromoBanner) => {
-    const newBanners = banners.map((b) => (b.id === updated.id ? updated : b));
-    setBanners(newBanners);
-    localStorage.setItem("pontal_live_banners", JSON.stringify(newBanners));
-    setEditingBanner(null);
-    toast.success(lang === "pt" ? "Banner atualizado com sucesso!" : "Banner updated successfully!");
-  };
-
-  const handleResetBanners = () => {
-    setBanners(DEFAULT_BANNERS);
-    localStorage.removeItem("pontal_live_banners");
-    setIsBannerAdminOpen(false);
-    toast.info(lang === "pt" ? "Banners restaurados para o padrão." : "Banners reset to default.");
-  };
-
   const filterChips = [
     { id: "all", label: lang === "pt" ? "Todos os Itens" : "All Items", icon: null },
     { id: "destaque", label: lang === "pt" ? "Destaques" : "Best Sellers", icon: "⭐" },
@@ -829,9 +626,9 @@ export default function LiveMenu() {
                   <div />
                 )}
 
-                {/* Micro Pagination Dots (Hidden on mobile) */}
+                {/* Micro Pagination Dots */}
                 {activeBanners.length > 1 && (
-                  <div className="hidden md:flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-xs">
+                  <div className="flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-xs">
                     {activeBanners.map((_, idx) => (
                       <button
                         key={idx}
@@ -843,15 +640,6 @@ export default function LiveMenu() {
                     ))}
                   </div>
                 )}
-
-                {/* Admin Banner Trigger */}
-                <button
-                  onClick={() => setIsBannerAdminOpen(true)}
-                  className="inline-flex items-center gap-1 text-[11px] text-white/70 hover:text-white bg-black/40 hover:bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-xs transition-colors"
-                >
-                  <Edit3 className="w-3 h-3 text-amber-300" />
-                  <span className="hidden xs:inline">Admin</span>
-                </button>
               </div>
             </div>
 
@@ -1367,200 +1155,6 @@ export default function LiveMenu() {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ================= ADMIN BANNER MANAGEMENT MODAL ================= */}
-      <Dialog open={isBannerAdminOpen} onOpenChange={setIsBannerAdminOpen}>
-        <DialogContent className="max-w-lg rounded-3xl bg-white border border-[#E5DFD3] p-5 shadow-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display font-bold text-lg text-[#1A2B2A] flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-[#BC6C25]" />
-                {lang === "pt" ? "Gerenciar Banners do Cardápio" : "Manage Menu Banners"}
-              </span>
-              <button
-                onClick={handleResetBanners}
-                title={lang === "pt" ? "Restaurar padrão" : "Reset default"}
-                className="text-xs text-[#A8A294] hover:text-rose-600 flex items-center gap-1"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                {lang === "pt" ? "Padrão" : "Reset"}
-              </button>
-            </DialogTitle>
-            <DialogDescription className="text-xs text-[#7A7568]">
-              {lang === "pt"
-                ? "Ative, desative ou edite os textos e fotos dos destaques principais."
-                : "Enable, disable or customize highlight banners and photos."}
-            </DialogDescription>
-          </DialogHeader>
-
-          {editingBanner ? (
-            /* Editing single banner form */
-            <div className="space-y-3.5 py-2">
-              <div className="p-3 bg-[#FAF8F3] rounded-2xl border border-[#EDE7DB] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1A2B2A]">
-                    {lang === "pt" ? "Editar Banner" : "Edit Banner"}
-                  </span>
-                  <label className="flex items-center gap-1.5 text-xs cursor-pointer font-medium">
-                    <input
-                      type="checkbox"
-                      checked={editingBanner.isActive}
-                      onChange={(e) =>
-                        setEditingBanner({ ...editingBanner, isActive: e.target.checked })
-                      }
-                      className="rounded text-[#BC6C25]"
-                    />
-                    {lang === "pt" ? "Ativo no Carrossel" : "Active"}
-                  </label>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-[#1A2B2A]">
-                    {lang === "pt" ? "Título (PT)" : "Title (PT)"}
-                  </label>
-                  <Input
-                    value={editingBanner.title.pt}
-                    onChange={(e) =>
-                      setEditingBanner({
-                        ...editingBanner,
-                        title: { ...editingBanner.title, pt: e.target.value },
-                      })
-                    }
-                    className="text-xs rounded-xl bg-white border-[#E0D8C8]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-bold text-[#1A2B2A]">
-                    {lang === "pt" ? "Subtítulo / Descrição (PT)" : "Subtitle (PT)"}
-                  </label>
-                  <Textarea
-                    value={editingBanner.subtitle.pt}
-                    onChange={(e) =>
-                      setEditingBanner({
-                        ...editingBanner,
-                        subtitle: { ...editingBanner.subtitle, pt: e.target.value },
-                      })
-                    }
-                    rows={2}
-                    className="text-xs rounded-xl bg-white border-[#E0D8C8]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[11px] font-bold text-[#1A2B2A]">Badge / Tag (PT)</label>
-                    <Input
-                      value={editingBanner.badge.pt}
-                      onChange={(e) =>
-                        setEditingBanner({
-                          ...editingBanner,
-                          badge: { ...editingBanner.badge, pt: e.target.value },
-                        })
-                      }
-                      className="text-xs rounded-xl bg-white border-[#E0D8C8]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-bold text-[#1A2B2A]">
-                      {lang === "pt" ? "Categoria Alvo" : "Category Target"}
-                    </label>
-                    <select
-                      value={editingBanner.categoryTarget || ""}
-                      onChange={(e) =>
-                        setEditingBanner({
-                          ...editingBanner,
-                          categoryTarget: e.target.value,
-                        })
-                      }
-                      className="w-full text-xs rounded-xl bg-white border border-[#E0D8C8] p-2"
-                    >
-                      <option value="">Nenhuma</option>
-                      {menu.map((cat) => (
-                        <option key={cat.key} value={cat.key}>
-                          {cat.name.pt}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingBanner(null)}
-                  className="flex-1 rounded-xl text-xs"
-                >
-                  {lang === "pt" ? "Cancelar" : "Cancel"}
-                </Button>
-                <Button
-                  onClick={() => handleSaveBanner(editingBanner)}
-                  className="flex-1 bg-[#BC6C25] hover:bg-[#9E571C] text-white rounded-xl text-xs font-bold"
-                >
-                  <Save className="w-3.5 h-3.5 mr-1" />
-                  {lang === "pt" ? "Salvar Alterações" : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            /* Banner list */
-            <div className="space-y-3 py-2">
-              {banners.map((banner, index) => (
-                <div
-                  key={banner.id}
-                  className="p-3 bg-[#FAF8F3] rounded-2xl border border-[#EDE7DB] flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getImageUrl(banner.image)}
-                      alt={banner.title.pt}
-                      className="w-14 h-14 rounded-xl object-cover border border-[#D9D2C2]"
-                    />
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <Badge
-                          variant={banner.isActive ? "default" : "secondary"}
-                          className={`text-[9px] px-1.5 py-0 ${
-                            banner.isActive ? "bg-emerald-600 text-white" : "bg-gray-300 text-gray-700"
-                          }`}
-                        >
-                          {banner.isActive ? "Ativo" : "Inativo"}
-                        </Badge>
-                        <span className="text-[10px] text-[#A8A294] font-medium">
-                          #{index + 1} • {banner.badge.pt}
-                        </span>
-                      </div>
-                      <h4 className="font-display font-bold text-xs text-[#1A2B2A] mt-0.5 line-clamp-1">
-                        {banner.title.pt}
-                      </h4>
-                      <p className="text-[11px] text-[#7A7568] line-clamp-1">
-                        {banner.subtitle.pt}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditingBanner(banner)}
-                    className="rounded-xl text-xs font-bold border-[#D9D2C2] hover:bg-white"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-              ))}
-
-              <Button
-                onClick={() => setIsBannerAdminOpen(false)}
-                className="w-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white rounded-xl text-xs font-bold"
-              >
-                {lang === "pt" ? "Concluir" : "Done"}
-              </Button>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
 
