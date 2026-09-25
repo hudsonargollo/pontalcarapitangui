@@ -421,26 +421,27 @@ export default function LiveMenu() {
       <header className="sticky top-0 z-40 bg-[#FFFFFF]/95 backdrop-blur-md border-b border-[#E5DFD3] shadow-xs transition-all">
         {/* Main Header Container (Contained to max-w-5xl) */}
         <div className="max-w-5xl mx-auto px-4 py-2.5">
-          <div className="flex items-center justify-between gap-2.5">
-            {/* Left: Hamburger Menu Button + Logo */}
-            <div className="flex items-center gap-2.5">
-              {/* Category Hamburger Menu Button (Always available on sticky header) */}
+          <div className="relative flex items-center justify-between min-h-[40px]">
+            {/* Left: Category Hamburger Menu Button */}
+            <div className="flex items-center z-10">
               <button
                 id="btn-header-categories"
                 onClick={() => setIsCategoryDrawerOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A2B2A] text-white hover:bg-[#2A3B3A] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs active:scale-95 shrink-0"
-                title={lang === "pt" ? "Ver todas as categorias" : "View all categories"}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1A2B2A] text-white hover:bg-[#2A3B3A] text-xs font-bold uppercase tracking-wider transition-colors shadow-xs active:scale-95 shrink-0"
+                title={lang === "pt" ? "Ver todas as categorias" : "Ver todas as categorias"}
               >
                 <MenuIcon className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-bold">
-                  {lang === "pt" ? "Categorias" : "Categories"}
+                  {lang === "pt" ? "CATEGORIAS" : "CATEGORIAS"}
                 </span>
               </button>
+            </div>
 
-              {/* Logo Image */}
+            {/* Center: Brand Logo Centered */}
+            <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none z-0">
               <button
                 onClick={() => navigate("/")}
-                className="flex items-center gap-2 text-left group transition-transform active:scale-95 shrink-0"
+                className="flex items-center justify-center group transition-transform active:scale-95 pointer-events-auto"
                 aria-label="Pontal Carapitangui — Início"
               >
                 <img
@@ -452,7 +453,7 @@ export default function LiveMenu() {
             </div>
 
             {/* Right: Language Pill & Call Waiter */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0 z-10">
               {/* Language Pill Switcher */}
               <div className="flex items-center h-8 bg-[#F2EEE4] p-0.5 rounded-full border border-[#D9D2C2]">
                 <button
@@ -480,7 +481,7 @@ export default function LiveMenu() {
               {/* Call Waiter Bell Button */}
               <button
                 onClick={() => setIsWaiterModalOpen(true)}
-                title={lang === "pt" ? "Chamar Garçom" : "Call Waiter"}
+                title={lang === "pt" ? "Chamar Garçom" : "Chamar Garçom"}
                 className="h-8 w-8 flex items-center justify-center rounded-full bg-[#1A2B2A] hover:bg-[#2A3B3A] text-white transition-colors shadow-xs active:scale-90 shrink-0"
               >
                 <BellRing className="w-4 h-4 text-amber-300" />
