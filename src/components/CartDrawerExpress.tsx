@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,10 @@ import {
   X, 
   Share2,
   ArrowRight,
-  Star
+  Star,
+  MapPin,
+  UtensilsCrossed,
+  Truck
 } from 'lucide-react';
 import { useCart } from '@/lib/cartContext';
 import { useMimenu } from '@/lib/mimenuContext';
@@ -36,37 +39,38 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
   onClose,
 }) => {
   const { state: cartState, addItem, removeItem, clearCart, getTotalPrice, getTotalItems } = useCart();
-  const { venue, selectedTable, fulfillmentType, setSelectedTable, createOrder } = useMimenu();
+  const { venue, selectedTable, fulfillmentType, setFulfillmentType, setSelectedTable, createOrder, getContextualUpsells } = useMimenu();
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryReference, setDeliveryReference] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'qr_simple' | 'cash' | 'card'>('qr_simple');
   const [selectedTip, setSelectedTip] = useState<number>(5);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedOrder, setConfirmedOrder] = useState<any | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const subtotal = getTotalPrice();
-  const grandTotal = subtotal + selectedTip;
+  const deliveryFee = fulfillmentType === 'delivery' ? 10 : 0;
+  const grandTotal = subtotal + selectedTip + deliveryFee;
 
-  // AI Upsell Items
-  const upsellItems = [
-    { id: 'up-1', name: 'Chopp Helado (500ml)', price: 25, badge: 'TOP MARIDAJE' },
-    { id: 'up-2', name: 'Extra Queso Cheddar Fundido', price: 6, badge: 'POPULAR' },
-    { id: 'up-3', name: 'Salsa Tártara Casera Extra', price: 4, badge: 'RECOMENDADO' },
-  ];
+  // Dynamic Contextual Upsells Engine
+  const cartItemIds = useMemo(() => cartState.items.map(i => i.id), [cartState.items]);
+  const dynamicUpsells = useMemo(() => getContextualUpsells(cartItemIds), [getContextualUpsells, cartItemIds]);
 
   const handleAddUpsell = (item: { id: string; name: string; price: number }) => {
     addItem({
       id: item.id,
       name: item.name,
-      description: 'Agregado desde sugerencia rápida',
+      description: 'Maridaje sugerido',
       price: item.price,
       category_id: 'cat-addons',
       available: true,
     });
-    toast.success(`Agregaste ${item.name} (+Bs. ${item.price})`);
+    toast.success(`Agregaste ${item.name} (+${venue.currency} ${item.price})`);
   };
 
   const handleSubmitOrder = (e: React.FormEvent) => {
@@ -77,6 +81,10 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
     }
     if (!customerName.trim()) {
       toast.error('Por favor ingresa tu nombre');
+      return;
+    }
+    if (fulfillmentType === 'delivery' && !deliveryAddress.trim()) {
+      toast.error('Por favor ingresa tu dirección de entrega');
       return;
     }
 
@@ -90,6 +98,10 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
           table_number: fulfillmentType === 'dine_in' ? (selectedTable || '1') : undefined,
           customer_name: customerName.trim(),
           customer_phone: customerPhone.trim() || '+591 70000000',
+          delivery_address: fulfillmentType === 'delivery' ? deliveryAddress.trim() : undefined,
+          delivery_reference: fulfillmentType === 'delivery' ? deliveryReference.trim() : undefined,
+          delivery_fee: deliveryFee,
+          tip_amount: selectedTip,
           items: cartState.items.map(i => ({
             item_id: i.id,
             name: i.name,
@@ -118,9 +130,14 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
 
   const getWhatsAppTicketText = () => {
     if (!confirmedOrder) return '';
-    const tableInfo = fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : 'Retiro en Barra';
+    const destination = fulfillmentType === 'dine_in'
+      ? `Mesa ${selectedTable || '1'}`
+      : fulfillmentType === 'pickup'
+      ? 'Retiro en Barra'
+      : `Delivery: ${deliveryAddress} (Ref: ${deliveryReference || 'S/R'})`;
+
     const itemsList = confirmedOrder.items.map((i: any) => `• ${i.quantity}x ${i.name} (Bs. ${i.price * i.quantity})`).join('\n');
-    return `*${venue.name.toUpperCase()} — PEDIDO #${confirmedOrder.order_number}*\nUbicación: ${tableInfo}\nCliente: ${confirmedOrder.customer_name}\n\n*DETALLE:*\n${itemsList}\n\nSubtotal: Bs. ${confirmedOrder.subtotal}\nPropina: Bs. ${selectedTip}\n*TOTAL:* Bs. ${confirmedOrder.total}\nMétodo: ${paymentMethod.replace('_', ' ').toUpperCase()}\n\n_Enviado desde MIMENU_`;
+    return `*${venue.name.toUpperCase()} — PEDIDO #${confirmedOrder.order_number}*\nTipo: ${fulfillmentType.toUpperCase()}\nDestino: ${destination}\nCliente: ${confirmedOrder.customer_name} (${confirmedOrder.customer_phone})\n\n*DETALLE:*\n${itemsList}\n\nSubtotal: Bs. ${confirmedOrder.subtotal}\n${deliveryFee > 0 ? `Envío Delivery: Bs. ${deliveryFee}\n` : ''}Propina: Bs. ${selectedTip}\n*TOTAL:* Bs. ${confirmedOrder.total}\nMétodo: ${paymentMethod.replace('_', ' ').toUpperCase()}\n\n_Enviado desde MIMENU Santa Cruz_`;
   };
 
   const handleShareWhatsApp = () => {
@@ -143,7 +160,7 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                 {confirmedOrder ? 'Pedido Confirmado' : `Tu Comanda • ${venue.name}`}
               </DialogTitle>
               <p className="text-[11px] text-slate-400 font-medium">
-                {fulfillmentType === 'dine_in' ? `Servicio en Mesa ${selectedTable || '1'}` : 'Retiro en Barra'}
+                {fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : fulfillmentType === 'pickup' ? 'Retiro en Barra' : 'Delivery Directo'}
               </p>
             </div>
           </div>
@@ -181,7 +198,9 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
               <div className="p-3.5 rounded-xl bg-muted/40 border border-border text-left space-y-2 text-xs">
                 <div className="flex justify-between font-medium">
                   <span className="text-muted-foreground">Destino:</span>
-                  <span className="font-semibold text-foreground">{fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : 'Retiro en Barra'}</span>
+                  <span className="font-semibold text-foreground">
+                    {fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : fulfillmentType === 'pickup' ? 'Retiro en Barra' : `Delivery: ${deliveryAddress}`}
+                  </span>
                 </div>
                 <div className="flex justify-between font-medium">
                   <span className="text-muted-foreground">Total:</span>
@@ -194,6 +213,16 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
               </div>
 
               <div className="flex flex-col gap-2 pt-2">
+                {paymentMethod === 'qr_simple' && (
+                  <Button
+                    onClick={() => setShowQrModal(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-11 rounded-xl shadow-xs flex items-center justify-center gap-2"
+                  >
+                    <QrCode className="w-4 h-4" aria-hidden="true" />
+                    <span>Ver QR Simple de Pago</span>
+                  </Button>
+                )}
+
                 <Button
                   onClick={() => setIsReviewModalOpen(true)}
                   className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs h-11 rounded-xl shadow-xs flex items-center justify-center gap-2"
@@ -226,6 +255,48 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
           ) : (
             /* Cart & Express Checkout Form */
             <form onSubmit={handleSubmitOrder} className="space-y-4">
+              {/* Fulfillment Type Selector */}
+              <div className="grid grid-cols-3 gap-1.5 p-1 bg-muted/40 rounded-xl border border-border">
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentType('dine_in')}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    fulfillmentType === 'dine_in'
+                      ? 'bg-background text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <UtensilsCrossed className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Mesa</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentType('pickup')}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    fulfillmentType === 'pickup'
+                      ? 'bg-background text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Retiro</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFulfillmentType('delivery')}
+                  className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    fulfillmentType === 'delivery'
+                      ? 'bg-background text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Truck className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>Delivery</span>
+                </button>
+              </div>
+
               {/* Item List */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -287,24 +358,24 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                 )}
               </div>
 
-              {/* AI Upsell Strip ("¿Completamos tu mesa?") */}
-              {cartState.items.length > 0 && (
+              {/* Dynamic Contextual Upsells */}
+              {cartState.items.length > 0 && dynamicUpsells.length > 0 && (
                 <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 space-y-2">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
                     <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Sugerencias para tu mesa</span>
+                    <span>Sugerencias para tu comanda</span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
-                    {upsellItems.map((up) => (
+                    {dynamicUpsells.map((up) => (
                       <button
                         key={up.id}
                         type="button"
                         onClick={() => handleAddUpsell(up)}
-                        className="p-2 rounded-lg bg-background border border-border/80 hover:border-amber-500 text-left transition-all shadow-xs flex flex-col justify-between"
+                        className="p-2 rounded-lg bg-background border border-border hover:border-amber-500 text-left transition-all shadow-2xs flex flex-col justify-between"
                       >
                         <div>
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block leading-none">{up.badge}</span>
+                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 block leading-none">MARIDAJE</span>
                           <p className="text-[10px] font-semibold text-foreground truncate mt-1">{up.name}</p>
                         </div>
                         <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-border/40">
@@ -317,11 +388,11 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                 </div>
               )}
 
-              {/* Customer Info & Table */}
+              {/* Customer Info & Destination Fields */}
               <div className="space-y-3 pt-1">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="text-[11px] font-semibold text-foreground mb-1 block">Tu Nombre</label>
+                    <label className="text-[11px] font-semibold text-foreground mb-1 block">Tu Nombre *</label>
                     <Input
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
@@ -332,16 +403,57 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-semibold text-foreground mb-1 block">N° de Mesa</label>
+                    <label className="text-[11px] font-semibold text-foreground mb-1 block">WhatsApp / Teléfono *</label>
+                    <Input
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      placeholder="+591 78012345"
+                      className="text-xs h-9 rounded-lg"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {fulfillmentType === 'dine_in' && (
+                  <div>
+                    <label className="text-[11px] font-semibold text-foreground mb-1 block">N° de Mesa *</label>
                     <Input
                       value={selectedTable || ''}
                       onChange={(e) => setSelectedTable(e.target.value)}
                       placeholder="Ej. 4, Terraza 2"
                       className="text-xs h-9 font-semibold rounded-lg"
-                      required={fulfillmentType === 'dine_in'}
+                      required
                     />
                   </div>
-                </div>
+                )}
+
+                {fulfillmentType === 'delivery' && (
+                  <div className="space-y-2 p-3 bg-muted/30 rounded-xl border border-border">
+                    <div>
+                      <label className="text-[11px] font-semibold text-foreground mb-1 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-amber-500" aria-hidden="true" />
+                        <span>Dirección de Entrega *</span>
+                      </label>
+                      <Input
+                        value={deliveryAddress}
+                        onChange={(e) => setDeliveryAddress(e.target.value)}
+                        placeholder="Barrio Equipetrol, Calle 7 Este #120"
+                        className="text-xs h-9 rounded-lg"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-foreground mb-1 block">Punto de Referencia</label>
+                      <Input
+                        value={deliveryReference}
+                        onChange={(e) => setDeliveryReference(e.target.value)}
+                        placeholder="Portón negro frente al condominio"
+                        className="text-xs h-9 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-[11px] font-semibold text-foreground mb-1 block">Notas para Cocina (opcional)</label>
@@ -383,7 +495,7 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                     }`}
                   >
                     <Banknote className="w-4 h-4 text-emerald-500" aria-hidden="true" />
-                    <span className="text-[10px] leading-tight">Efectivo Mesa</span>
+                    <span className="text-[10px] leading-tight">Efectivo</span>
                   </button>
 
                   <button
@@ -402,35 +514,40 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
               </div>
 
               {/* Voluntary Tip Selector */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-[11px]">
-                  <span className="font-semibold text-muted-foreground">Propina voluntaria para el equipo:</span>
-                  <span className="font-bold text-amber-500 tabular-nums">Bs. {selectedTip}</span>
+              {fulfillmentType === 'dine_in' && (
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="font-semibold text-muted-foreground">Propina voluntaria para el equipo:</span>
+                    <span className="font-bold text-amber-500 tabular-nums">Bs. {selectedTip}</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 5, 10, 20].map((tip) => (
+                      <button
+                        key={tip}
+                        type="button"
+                        onClick={() => setSelectedTip(tip)}
+                        className={`py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                          selectedTip === tip
+                            ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
+                            : 'bg-muted/30 border-border text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {tip === 0 ? 'Sin propina' : `Bs. ${tip}`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 5, 10, 20].map((tip) => (
-                    <button
-                      key={tip}
-                      type="button"
-                      onClick={() => setSelectedTip(tip)}
-                      className={`py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                        selectedTip === tip
-                          ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
-                          : 'bg-muted/30 border-border text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {tip === 0 ? 'Sin propina' : `Bs. ${tip}`}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              )}
 
               {/* Total & Submit Button */}
               <div className="pt-2 border-t border-border space-y-3">
                 <div className="flex justify-between items-baseline">
                   <div>
                     <span className="text-xs text-muted-foreground block font-medium">Total a Pagar</span>
-                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Servicio digital directo</span>
+                    {deliveryFee > 0 && (
+                      <span className="text-[10px] text-muted-foreground block">Incluye Bs. 10 de envío delivery</span>
+                    )}
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">0% comisión de app</span>
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-black text-amber-500 tabular-nums">
@@ -448,7 +565,7 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
                     'Enviando a Cocina...'
                   ) : (
                     <>
-                      <span>Enviar Pedido a Cocina ({venue.currency} {grandTotal})</span>
+                      <span>Confirmar Comanda ({venue.currency} {grandTotal})</span>
                       <ArrowRight className="w-4 h-4" aria-hidden="true" />
                     </>
                   )}
@@ -458,6 +575,34 @@ export const CartDrawerExpress: React.FC<CartDrawerExpressProps> = ({
           )}
         </div>
       </DialogContent>
+
+      {/* QR Simple Modal Preview */}
+      <Dialog open={showQrModal} onOpenChange={setShowQrModal}>
+        <DialogContent className="max-w-sm w-full p-6 text-center space-y-4 bg-card border-border rounded-2xl">
+          <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20 flex items-center justify-center mx-auto">
+            <QrCode className="w-6 h-6" aria-hidden="true" />
+          </div>
+          <div>
+            <DialogTitle className="text-base font-bold text-foreground">QR Simple Bolivia</DialogTitle>
+            <p className="text-xs text-muted-foreground mt-1">Escanea con BNB, BCP, Banco Unión o tu app bancaria favorita.</p>
+          </div>
+          <div className="p-4 bg-white rounded-xl border border-slate-200 inline-block mx-auto shadow-sm">
+            <div className="w-48 h-48 bg-slate-900 rounded-lg flex flex-col items-center justify-center text-white p-2">
+              <QrCode className="w-36 h-36 text-white" aria-hidden="true" />
+              <span className="text-[10px] font-mono text-amber-300 font-bold">PAGAR BS. {confirmedOrder?.total || grandTotal}</span>
+            </div>
+          </div>
+          <Button
+            onClick={() => {
+              setShowQrModal(false);
+              toast.success('Pago verificado por QR Simple');
+            }}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-10 rounded-xl"
+          >
+            Confirmar Pago Realizado
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       {/* Google Review Hunter Modal */}
       <GoogleReviewHunterModal

@@ -30,10 +30,12 @@ const Menu: React.FC = () => {
   const { addItem, removeItem, getItemQuantity, getTotalItems, getTotalPrice } = useCart();
 
   const [activeCategoryKey, setActiveCategoryKey] = useState<string>('all');
+  const [activeDietaryFilter, setActiveDietaryFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [onlyHot, setOnlyHot] = useState<boolean>(false);
   const [selectedReviewItem, setSelectedReviewItem] = useState<MenuItemDetail | null>(null);
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState<'es' | 'en' | 'pt'>('es');
 
   useEffect(() => {
     document.title = `${venue.name} — Menú Digital Santa Cruz`;
@@ -54,6 +56,12 @@ const Menu: React.FC = () => {
       if (onlyHot && item.hotness_score < 4) {
         return false;
       }
+      // Dietary filter
+      if (activeDietaryFilter !== 'all') {
+        const matchesDiet = item.dietary?.includes(activeDietaryFilter);
+        const matchesAllergens = !item.allergens?.includes(activeDietaryFilter.replace('Sin ', ''));
+        if (!matchesDiet && !matchesAllergens) return false;
+      }
       // Search filter
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
@@ -64,7 +72,7 @@ const Menu: React.FC = () => {
       }
       return true;
     });
-  }, [allItems, activeCategoryKey, onlyHot, searchTerm]);
+  }, [allItems, activeCategoryKey, onlyHot, activeDietaryFilter, searchTerm]);
 
   const handleAddToCart = (item: MenuItemDetail) => {
     addItem({
@@ -163,6 +171,30 @@ const Menu: React.FC = () => {
             <Flame className={`w-3.5 h-3.5 ${onlyHot ? 'fill-white text-white' : 'fill-rose-500 text-rose-500'}`} aria-hidden="true" />
             <span>Más Pedidos</span>
           </button>
+        </div>
+
+        {/* Dietary & Allergen Filters Row */}
+        <div className="flex items-center gap-2 mb-6 overflow-x-auto no-scrollbar pb-1">
+          <span className="text-[11px] font-semibold text-muted-foreground whitespace-nowrap mr-1">Filtros:</span>
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'Sin Gluten', label: 'Sin Gluten' },
+            { id: 'Vegetariano', label: 'Vegetariano' },
+            { id: 'Picante', label: 'Picante' },
+            { id: 'Sin Lácteos', label: 'Sin Lácteos' }
+          ].map((df) => (
+            <button
+              key={df.id}
+              onClick={() => setActiveDietaryFilter(df.id)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border ${
+                activeDietaryFilter === df.id
+                  ? 'bg-foreground text-background border-foreground font-bold'
+                  : 'bg-muted/30 text-muted-foreground border-border hover:border-slate-400 hover:text-foreground'
+              }`}
+            >
+              {df.label}
+            </button>
+          ))}
         </div>
 
         {/* Products Grid */}

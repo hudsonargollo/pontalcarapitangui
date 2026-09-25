@@ -60,6 +60,8 @@ export const INITIAL_CATEGORIES: MenuCategoryDetail[] = [
         reviews_count: 48,
         average_rating: 4.9,
         tags: ["Insignia", "Para Compartir", "Queso Cheddar"],
+        allergens: ["Lácteos", "Huevo", "Gluten"],
+        dietary: ["Sin Gluten"],
       },
       {
         id: "item-salchipapa-clasica",
@@ -76,6 +78,8 @@ export const INITIAL_CATEGORIES: MenuCategoryDetail[] = [
         reviews_count: 32,
         average_rating: 4.7,
         tags: ["Clásico", "Rápido"],
+        allergens: ["Huevo"],
+        dietary: ["Sin Gluten"],
       },
       {
         id: "item-salchipapa-mixta",
@@ -92,6 +96,7 @@ export const INITIAL_CATEGORIES: MenuCategoryDetail[] = [
         reviews_count: 24,
         average_rating: 4.8,
         tags: ["Lomo a la Plancha", "Mozzarella"],
+        allergens: ["Lácteos"],
       },
       {
         id: "item-salchipapa-criolla",
@@ -108,6 +113,8 @@ export const INITIAL_CATEGORIES: MenuCategoryDetail[] = [
         reviews_count: 19,
         average_rating: 4.6,
         tags: ["Sabor Camba", "Picantito"],
+        allergens: ["Huevo"],
+        dietary: ["Picante"],
       },
     ],
   },

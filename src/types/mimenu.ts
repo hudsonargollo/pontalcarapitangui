@@ -1,4 +1,4 @@
-export type FulfillmentType = 'dine_in' | 'pickup';
+export type FulfillmentType = 'dine_in' | 'pickup' | 'delivery';
 
 export type HotnessLevel = 1 | 2 | 3 | 4 | 5;
 
@@ -24,6 +24,11 @@ export interface Venue {
   facebook?: string;
   google_review_url?: string;
   is_active: boolean;
+  delivery_zones?: {
+    name: string;
+    fee: number;
+    estimated_mins: string;
+  }[];
 }
 
 export interface MenuItemReview {
@@ -55,8 +60,8 @@ export interface MenuItemDetail {
   reviews_count: number;
   average_rating: number;
   tags?: string[];
-  allergens?: string[]; // e.g. ["Gluten", "Lácteos", "Huevo", "Maní"]
-  dietary?: string[]; // e.g. ["Sin Gluten", "Vegetariano", "Picante"]
+  allergens?: string[]; // e.g. ["Gluten", "Lácteos", "Huevo", "Maní", "Mariscos", "Soja"]
+  dietary?: string[]; // e.g. ["Sin Gluten", "Vegetariano", "Vegano", "Picante"]
   options?: {
     name: string;
     choices: { label: string; extra_price: number }[];
@@ -136,7 +141,13 @@ export interface MimenuOrder {
   table_number?: string;
   customer_name: string;
   customer_phone: string;
+  delivery_address?: string;
+  delivery_reference?: string;
+  delivery_zone?: string;
+  delivery_fee?: number;
   pickup_eta?: string;
+  customer_notes?: string;
+  tip_amount?: number;
   items: {
     item_id: string;
     name: string;
@@ -152,4 +163,17 @@ export interface MimenuOrder {
   payment_method: 'cash' | 'qr_simple' | 'card';
   payment_status: 'pending' | 'paid';
   created_at: string;
+}
+
+export interface CustomerProfile {
+  id: string;
+  name: string;
+  phone: string;
+  total_orders: number;
+  total_spent: number;
+  first_visit_at: string;
+  last_visit_at: string;
+  favorite_items: string[];
+  loyalty_tier: 'Bronce' | 'Plata' | 'Oro' | 'VIP';
+  notes?: string;
 }

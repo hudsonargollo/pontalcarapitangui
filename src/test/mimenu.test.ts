@@ -155,4 +155,30 @@ describe('MIMENU - Moe\'s Taberna Santa Cruz de la Sierra Test Suite', () => {
       expect(response.dataInsights?.metrics.length).toBeGreaterThanOrEqual(2);
     });
   });
+
+  describe('8 Core Landing Pillars Backing Functionality', () => {
+    it('Pillar 1 & 8: Menu items should support structured allergens, dietary tags, and hotness baselines', () => {
+      const allItems = INITIAL_CATEGORIES.flatMap(c => c.items);
+      const itemsWithAllergens = allItems.filter(i => i.allergens && i.allergens.length > 0);
+      expect(itemsWithAllergens.length).toBeGreaterThanOrEqual(3);
+
+      const itemsWithDietary = allItems.filter(i => i.dietary && i.dietary.length > 0);
+      expect(itemsWithDietary.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('Pillar 4: Table QR codes should format cleanly for unique tables in Santa Cruz', () => {
+      const sampleTable = INITIAL_TABLES[0];
+      expect(sampleTable.qr_code_hash).toBeDefined();
+      expect(sampleTable.zone).toBeDefined();
+      expect(['Principal', 'Terraza', 'VIP', 'Barra']).toContain(sampleTable.zone);
+    });
+
+    it('Pillar 2: Review Hunter data structures should record 1-5 star ratings with status', () => {
+      const sampleReview = INITIAL_REVIEWS[0];
+      expect(sampleReview.rating).toBeGreaterThanOrEqual(1);
+      expect(sampleReview.rating).toBeLessThanOrEqual(5);
+      expect(sampleReview.customer_name).toBeDefined();
+      expect(['approved', 'pending', 'rejected']).toContain(sampleReview.status);
+    });
+  });
 });
