@@ -20,13 +20,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen, Trash2 } from 'lucide-react';
+import { Edit, Plus, Upload, ArrowUpDown, ShoppingBag, FolderOpen, Trash2, Camera, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { SortingDialog } from '@/components/SortingDialog';
 import { CategoryManagement } from '@/components/CategoryManagement';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import AdminLayout from '@/components/AdminLayout';
+import { MenuPhotoIngesterModal } from '@/components/MenuPhotoIngesterModal';
 
 interface MenuItem {
   id: string;
@@ -59,6 +60,7 @@ const AdminProducts = () => {
   // Sorting dialog state
   const [isSortingDialogOpen, setIsSortingDialogOpen] = useState(false);
   const [selectedCategoryForSorting, setSelectedCategoryForSorting] = useState<Category | null>(null);
+  const [isPhotoIngesterOpen, setIsPhotoIngesterOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -369,25 +371,37 @@ const AdminProducts = () => {
             <h1 className="text-3xl font-display font-bold text-gray-900">Produtos</h1>
             <p className="text-gray-600 mt-1">Gerenciar cardápio e categorias</p>
           </div>
-          <Button
-            onClick={() => {
-              setEditingItem(null);
-              setFormData({
-                name: '',
-                description: '',
-                price: '',
-                category_id: categories[0]?.id || '',
-                available: true,
-                image_url: '',
-              });
-              setIsDialogOpen(true);
-            }}
-            className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider rounded-lg shadow-lg"
-            size="lg"
-          >
-            <Plus className="mr-2 h-5 w-5" />
-            Novo Produto
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setIsPhotoIngesterOpen(true)}
+              variant="outline"
+              className="border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 font-bold gap-1.5 shadow-sm"
+              size="lg"
+            >
+              <Camera className="h-5 w-5" />
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              Escanear Menú con Foto / IA
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingItem(null);
+                setFormData({
+                  name: '',
+                  description: '',
+                  price: '',
+                  category_id: categories[0]?.id || '',
+                  available: true,
+                  image_url: '',
+                });
+                setIsDialogOpen(true);
+              }}
+              className="bg-secondary hover:bg-secondary/90 text-foreground font-display uppercase tracking-wider rounded-lg shadow-lg"
+              size="lg"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Novo Produto
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -699,6 +713,13 @@ const AdminProducts = () => {
           onSave={handleSortingSave}
         />
       )}
+
+      {/* Menu Photo Ingester Modal */}
+      <MenuPhotoIngesterModal
+        open={isPhotoIngesterOpen}
+        onOpenChange={setIsPhotoIngesterOpen}
+        onSuccess={() => loadData()}
+      />
     </AdminLayout>
   );
 };

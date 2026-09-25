@@ -16,7 +16,8 @@ import {
   Flame,
   Pizza,
   Wine,
-  Utensils
+  Utensils,
+  Camera
 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { MenuCategoryDetail, MenuItemDetail } from '@/types/mimenu';
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { MenuPhotoIngesterModal } from '@/components/MenuPhotoIngesterModal';
 
 // Sample presets for 1-click menu generation
 const MENU_PRESETS: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; categories: MenuCategoryDetail[] }> = {
@@ -203,6 +205,7 @@ export const Onboarding: React.FC = () => {
   );
   const [rawMenuText, setRawMenuText] = useState("");
   const [isAiParsing, setIsAiParsing] = useState(false);
+  const [isPhotoIngesterOpen, setIsPhotoIngesterOpen] = useState(false);
 
   // Step 3: Tables & QR setup
   const [tableCount, setTableCount] = useState<number>(10);
@@ -496,6 +499,29 @@ export const Onboarding: React.FC = () => {
               <p className="text-xs sm:text-sm text-muted-foreground">
                 Elige una plantilla base o importa tu lista de platos.
               </p>
+            </div>
+
+            {/* Photo Ingester Hero Option */}
+            <div 
+              onClick={() => setIsPhotoIngesterOpen(true)}
+              className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-primary/10 to-card border-2 border-amber-500/40 hover:border-amber-500 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                  <Camera className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-foreground">Subir Foto o Escanear Carta con IA</h3>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full">Recomendado</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">Toma una foto de tu carta de papel y la IA extraerá todos los platos y precios automáticamente</p>
+                </div>
+              </div>
+              <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs gap-1.5 shrink-0 pointer-events-none">
+                <Camera className="w-3.5 h-3.5" />
+                <span>Escanear Foto</span>
+              </Button>
             </div>
 
             {/* Presets Cards */}
@@ -826,6 +852,12 @@ Chopp Helado Artesanal 22 Bs"
         )}
 
       </main>
+
+      {/* Menu Photo Ingester Modal */}
+      <MenuPhotoIngesterModal
+        open={isPhotoIngesterOpen}
+        onOpenChange={setIsPhotoIngesterOpen}
+      />
     </div>
   );
 };

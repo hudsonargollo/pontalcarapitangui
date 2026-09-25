@@ -22,6 +22,7 @@ const OrderStatus = lazy(() => import("./pages/customer/OrderStatus"));
 // Lazy load admin pages
 const Admin = lazy(() => import("./pages/admin/Admin"));
 const AdminAIChat = lazy(() => import("./pages/admin/AdminAIChat"));
+const AdminMenuIngester = lazy(() => import("./pages/admin/AdminMenuIngester"));
 const AdminOffers = lazy(() => import("./pages/admin/AdminOffers"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminTables = lazy(() => import("./pages/admin/AdminTables"));
@@ -199,6 +200,16 @@ const App = () => {
                   <Route path="/admin/ai" element={
                     <Suspense fallback={<LoadingFallback />}>
                       <AdminAIChat />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/ingester" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminMenuIngester />
+                    </Suspense>
+                  } />
+                  <Route path="/admin/ingest-menu" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AdminMenuIngester />
                     </Suspense>
                   } />
                   <Route path="/admin/offers" element={

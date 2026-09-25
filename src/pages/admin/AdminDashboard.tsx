@@ -14,14 +14,17 @@ import {
   Clock, 
   ArrowUpRight,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Camera
 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { HotnessIndicator } from '@/components/HotnessIndicator';
+import { MenuPhotoIngesterModal } from '@/components/MenuPhotoIngesterModal';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { venue, categories, cyclingOffers, activeOffers, tables, reviews, orders, recalculateAllHotness } = useMimenu();
+  const [isPhotoIngesterOpen, setIsPhotoIngesterOpen] = React.useState(false);
 
   useEffect(() => {
     document.title = `Command Center — ${venue.name} | MIMENU`;
@@ -57,6 +60,17 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setIsPhotoIngesterOpen(true)}
+            variant="outline"
+            className="border-primary/40 bg-primary/5 text-primary hover:bg-primary/10 text-xs font-bold gap-1.5 shadow-sm"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <Sparkles className="w-3 h-3 text-amber-500" />
+            <span>Escanear Carta con Foto</span>
+          </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -291,6 +305,12 @@ const AdminDashboard: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Menu Photo Ingester Modal */}
+      <MenuPhotoIngesterModal
+        open={isPhotoIngesterOpen}
+        onOpenChange={setIsPhotoIngesterOpen}
+      />
     </div>
   );
 };
