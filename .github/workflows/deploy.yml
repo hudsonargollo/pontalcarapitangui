@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - mimenu
   workflow_dispatch:
 
 jobs:

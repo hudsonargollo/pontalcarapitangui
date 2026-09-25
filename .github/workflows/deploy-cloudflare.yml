@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - mimenu
   pull_request:
     branches:
       - main
+      - mimenu
   workflow_dispatch:
 
 jobs:
