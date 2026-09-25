@@ -48,6 +48,7 @@ const WaiterDiagnostic = lazy(() => import("./pages/waiter/WaiterDiagnostic"));
 
 // Lazy load public pages
 const Landing = lazy(() => import("./pages/public/Landing"));
+const LandingGenio = lazy(() => import("./pages/public/LandingGenio"));
 const Onboarding = lazy(() => import("./pages/public/Onboarding"));
 const LandingMenu = lazy(() => import("./pages/public/LandingMenu"));
 const Proposta = lazy(() => import("./pages/public/Proposta"));
@@ -92,6 +93,16 @@ const App = () => {
                 <Routes>
                   {/* Public & SEO Landing */}
                   <Route path="/" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <LandingGenio />
+                    </Suspense>
+                  } />
+                  <Route path="/cardapio-digital" element={
+                    <Suspense fallback={<LoadingFallback />}>
+                      <LandingGenio />
+                    </Suspense>
+                  } />
+                  <Route path="/saas" element={
                     <Suspense fallback={<LoadingFallback />}>
                       <Landing />
                     </Suspense>
