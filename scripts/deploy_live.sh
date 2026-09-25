@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -e
-cd /root/ClubeMkt/mimenu
+cd "$(dirname "$0")/.."
 
-TOKEN="REDACTED"
-export CLOUDFLARE_API_TOKEN="$TOKEN"
+export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-}"
 
 echo "Checking wrangler auth with token..."
 npx wrangler whoami
