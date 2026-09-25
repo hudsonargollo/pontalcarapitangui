@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Star, Sparkles, ExternalLink, HeartHandshake, CheckCircle2, MessageSquare, ShieldAlert } from 'lucide-react';
+import { Star, Sparkles, ExternalLink, MessageSquare, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { toast } from 'sonner';
 
@@ -40,6 +40,23 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
     setRating(selectedStar);
   };
 
+  const getRatingFeedbackLabel = (score: number) => {
+    switch (score) {
+      case 5:
+        return 'Excelente experiencia';
+      case 4:
+        return 'Muy buena experiencia';
+      case 3:
+        return 'Aceptable / Regular';
+      case 2:
+        return 'Podría mejorar';
+      case 1:
+        return 'Experiencia insatisfactoria';
+      default:
+        return '';
+    }
+  };
+
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
     const finalName = customerName.trim() || 'Cliente Satisfecho';
@@ -49,9 +66,9 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
     addReview('venue-overall', finalName, rating, finalComment);
 
     if (rating >= 4) {
-      // 5-Star: Direct to Google Maps
+      // 4-5 Star: Direct to Google Maps
       window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
-      toast.success('¡Gracias por tu reseña 5 estrellas! Redirigiendo a Google Maps...', {
+      toast.success('¡Gracias por tu reseña! Redirigiendo a Google Maps...', {
         description: 'Tu opinión nos ayuda a seguir creciendo.',
       });
     } else {
@@ -70,16 +87,16 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md w-full p-0 overflow-hidden bg-card border-border rounded-3xl shadow-2xl">
+      <DialogContent className="max-w-md w-full p-0 overflow-hidden bg-card border-border rounded-2xl sm:rounded-3xl shadow-2xl">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-600 text-white p-6 text-center relative">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto mb-2 text-2xl shadow-inner">
-            ⭐
+        <div className="bg-slate-900 dark:bg-slate-950 text-white p-6 text-center relative border-b border-slate-800">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto mb-3 shadow-inner">
+            <Star className="w-6 h-6 text-amber-400 fill-amber-400" aria-hidden="true" />
           </div>
-          <DialogTitle className="text-xl font-black text-white">
-            ¿Cómo estuvo hoy tu noche?
+          <DialogTitle className="text-xl font-bold tracking-tight text-white">
+            ¿Cómo estuvo hoy tu experiencia?
           </DialogTitle>
-          <DialogDescription className="text-white/90 text-xs mt-1 font-medium">
+          <DialogDescription className="text-slate-400 text-xs mt-1 font-medium">
             Tu opinión en {venue.name} es fundamental para nosotros.
           </DialogDescription>
         </div>
@@ -101,48 +118,46 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
                         onClick={() => handleRatingSelect(star)}
                         onMouseEnter={() => setHoverRating(star)}
                         onMouseLeave={() => setHoverRating(null)}
-                        className="p-1 text-2xl sm:text-3xl transition-transform hover:scale-125 focus:outline-none"
+                        aria-label={`Calificar ${star} de 5 estrellas`}
+                        className="p-1 text-2xl sm:text-3xl transition-transform hover:scale-115 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-500 rounded-md"
                       >
                         <Star
                           className={`w-8 h-8 transition-colors ${
                             isFilled
-                              ? 'text-amber-400 fill-amber-400 drop-shadow-sm'
+                              ? 'text-amber-400 fill-amber-400 drop-shadow-xs'
                               : 'text-muted-foreground/30 hover:text-amber-300'
                           }`}
+                          aria-hidden="true"
                         />
                       </button>
                     );
                   })}
                 </div>
                 
-                <span className="text-xs font-black uppercase tracking-wider text-amber-500">
-                  {rating === 5 && '🔥 ¡Increíble! Excelente experiencia'}
-                  {rating === 4 && '✨ Muy Buena comida y ambiente'}
-                  {rating === 3 && '👍 Regular / Aceptable'}
-                  {rating === 2 && '⚠️ Podría Mejorar'}
-                  {rating === 1 && '❌ Mala experiencia'}
+                <span className="text-xs font-bold tracking-wide uppercase text-amber-500">
+                  {getRatingFeedbackLabel(hoverRating !== null ? hoverRating : rating)}
                 </span>
               </div>
 
               {/* Dynamic message based on rating */}
               {rating >= 4 ? (
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/30 text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 text-blue-500 font-bold">
-                    <Sparkles className="w-4 h-4" />
-                    <span>¡Sube tu reseña directo a Google Maps!</span>
+                <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-bold">
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
+                    <span>Publica tu reseña directa en Google Maps</span>
                   </div>
-                  <p className="text-muted-foreground text-[11px]">
-                    Al enviar, se abrirá la ficha de <strong>{venue.name}</strong> en Google para publicar tus 5 estrellas en 1 clic.
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Al enviar, se abrirá la ficha de <strong>{venue.name}</strong> en Google para publicar tu calificación con 1 clic.
                   </p>
                 </div>
               ) : (
-                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-xs space-y-1">
-                  <div className="flex items-center gap-1.5 text-red-500 font-bold">
-                    <ShieldAlert className="w-4 h-4" />
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold">
+                    <ShieldAlert className="w-4 h-4" aria-hidden="true" />
                     <span>Canal Privado de Feedback a Gerencia</span>
                   </div>
-                  <p className="text-muted-foreground text-[11px]">
-                    Tu mensaje no se publicará en Google; irá directo al teléfono del administrador para solucionar cualquier inconveniente.
+                  <p className="text-muted-foreground text-[11px] leading-relaxed">
+                    Tu mensaje irá directamente a la administración para resolver cualquier observación de forma inmediata.
                   </p>
                 </div>
               )}
@@ -162,7 +177,7 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
                   placeholder={
                     rating >= 4 
                       ? "¿Qué fue lo que más te gustó? (ej. La Salchipapa Monster y el Chopp bien frío)"
-                      : "Cuéntanos qué salió mal para solucionarlo de inmediato..."
+                      : "Cuéntanos qué podemos mejorar..."
                   }
                   rows={3}
                   className="text-xs rounded-xl bg-background resize-none"
@@ -172,20 +187,20 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
               {/* Action Button */}
               <Button
                 type="submit"
-                className={`w-full font-black text-xs py-5 rounded-2xl shadow-lg transition-all ${
+                className={`w-full font-bold text-xs py-5 rounded-xl shadow-md transition-all ${
                   rating >= 4
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
                     : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                 }`}
               >
                 {rating >= 4 ? (
                   <>
-                    <ExternalLink className="w-4 h-4 mr-1.5" />
-                    <span>Publicar en Google Maps (5★)</span>
+                    <ExternalLink className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    <span>Publicar en Google Maps</span>
                   </>
                 ) : (
                   <>
-                    <MessageSquare className="w-4 h-4 mr-1.5" />
+                    <MessageSquare className="w-4 h-4 mr-1.5" aria-hidden="true" />
                     <span>Enviar Feedback a Administración</span>
                   </>
                 )}
@@ -193,9 +208,17 @@ export const GoogleReviewHunterModal: React.FC<GoogleReviewHunterModalProps> = (
             </form>
           ) : (
             <div className="py-8 text-center space-y-3">
-              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto animate-bounce" />
-              <h4 className="text-base font-black text-foreground">¡Muchas Gracias!</h4>
-              <p className="text-xs text-muted-foreground">Tu feedback fue registrado con éxito.</p>
+              <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 flex items-center justify-center mx-auto">
+                <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
+              </div>
+              <h4 className="text-base font-bold text-foreground">
+                ¡Gracias por tu opinión!
+              </h4>
+              <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                {rating >= 4
+                  ? 'Redirigiendo a Google Maps para completar tu publicación...'
+                  : 'Tu mensaje fue recibido por la administración.'}
+              </p>
             </div>
           )}
         </div>

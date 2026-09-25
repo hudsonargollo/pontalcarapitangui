@@ -8,7 +8,11 @@ import {
   Sparkles, 
   ShoppingBag, 
   UtensilsCrossed, 
-  ChevronRight
+  ChevronRight,
+  MapPin,
+  Clock,
+  Leaf,
+  AlertCircle
 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { useCart } from '@/lib/cartContext';
@@ -19,11 +23,9 @@ import { ItemReviewDialog } from '@/components/ItemReviewDialog';
 import { CyclingOffersBanner } from '@/components/CyclingOffersBanner';
 import { CartDrawerExpress } from '@/components/CartDrawerExpress';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const Menu: React.FC = () => {
-  const navigate = useNavigate();
   const { venue, categories, selectedTable, fulfillmentType } = useMimenu();
   const { addItem, removeItem, getItemQuantity, getTotalItems, getTotalPrice } = useCart();
 
@@ -34,7 +36,7 @@ const Menu: React.FC = () => {
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   useEffect(() => {
-    document.title = `${venue.name} — Menú Digital & Pedidos Santa Cruz`;
+    document.title = `${venue.name} — Menú Digital Santa Cruz`;
   }, [venue.name]);
 
   // Flatten and filter items
@@ -88,35 +90,35 @@ const Menu: React.FC = () => {
 
       <main className="max-w-6xl mx-auto px-4 py-6 w-full flex-1">
         {/* Venue Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-600 via-red-600 to-amber-700 text-white p-6 md:p-8 mb-8 shadow-xl">
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-300 via-red-500 to-transparent" />
-          
+        <div className="relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-slate-950 text-white p-6 md:p-8 mb-8 border border-slate-800 shadow-sm">
           <div className="relative z-10 max-w-2xl space-y-2">
-            <div className="inline-flex items-center gap-2 bg-black/30 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-300 border border-white/10">
-              <Flame className="w-3.5 h-3.5 fill-amber-300" />
-              <span>Santa Cruz de la Sierra • Noche & Bajón</span>
+            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-400">
+              <Flame className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+              <span>Santa Cruz de la Sierra • Noche & Gastronomía</span>
             </div>
             
-            <h1 className="text-2xl md:text-4xl font-black tracking-tight leading-tight">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
               {venue.name}
             </h1>
             
-            <p className="text-sm md:text-base text-white/90 font-medium">
+            <p className="text-xs md:text-sm text-slate-300 font-normal leading-relaxed">
               {venue.description}
             </p>
 
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-semibold text-white/80">
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-400">
               <span className="flex items-center gap-1.5">
-                📍 {venue.address}
+                <MapPin className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" />
+                {venue.address}
               </span>
               <span className="flex items-center gap-1.5">
-                🕒 {venue.opening_hours}
+                <Clock className="w-3.5 h-3.5 text-slate-400" aria-hidden="true" />
+                {venue.opening_hours}
               </span>
             </div>
           </div>
         </div>
 
-        {/* 5.1 Intelligent Cycling Offers Banner */}
+        {/* Intelligent Cycling Offers Banner */}
         <CyclingOffersBanner />
 
         {/* Category Navigation Bar & Hotness Filter */}
@@ -124,22 +126,22 @@ const Menu: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveCategoryKey('all')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                 activeCategoryKey === 'all'
-                  ? 'bg-primary text-primary-foreground shadow-md'
+                  ? 'bg-amber-500 text-white shadow-xs'
                   : 'bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground'
               }`}
             >
-              🍽️ Todo el Menú ({allItems.length})
+              Todos ({allItems.length})
             </button>
 
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategoryKey(cat.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                   activeCategoryKey === cat.id
-                    ? 'bg-primary text-primary-foreground shadow-md'
+                    ? 'bg-amber-500 text-white shadow-xs'
                     : 'bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -151,23 +153,24 @@ const Menu: React.FC = () => {
           {/* Hotness Filter Toggle */}
           <button
             onClick={() => setOnlyHot(!onlyHot)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black whitespace-nowrap border transition-all ${
+            aria-pressed={onlyHot}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${
               onlyHot
-                ? 'bg-red-500 text-white border-red-500 shadow-md animate-pulse'
-                : 'bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20'
+                ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
+                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20 hover:bg-rose-500/15'
             }`}
           >
-            <Flame className={`w-4 h-4 ${onlyHot ? 'fill-white' : 'fill-red-500'}`} />
-            <span>🔥 Solo En Llamas</span>
+            <Flame className={`w-3.5 h-3.5 ${onlyHot ? 'fill-white text-white' : 'fill-rose-500 text-rose-500'}`} aria-hidden="true" />
+            <span>Más Pedidos</span>
           </button>
         </div>
 
         {/* Products Grid */}
         {filteredItems.length === 0 ? (
           <div className="text-center py-16 bg-muted/20 rounded-2xl border border-dashed border-border">
-            <UtensilsCrossed className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
-            <h3 className="text-lg font-bold text-foreground">No encontramos platos con esos filtros</h3>
-            <p className="text-xs text-muted-foreground mt-1">Prueba seleccionando otra categoría o borrando la búsqueda.</p>
+            <UtensilsCrossed className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" aria-hidden="true" />
+            <h3 className="text-base font-bold text-foreground">No encontramos platos con esos filtros</h3>
+            <p className="text-xs text-muted-foreground mt-1">Prueba seleccionando otra categoría o limpiando la búsqueda.</p>
             <Button
               variant="outline"
               size="sm"
@@ -190,32 +193,33 @@ const Menu: React.FC = () => {
                 <motion.div
                   key={item.id}
                   layout
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="group relative flex flex-col justify-between bg-card hover:bg-card/90 border border-border/80 hover:border-primary/50 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+                  transition={{ duration: 0.15 }}
+                  className="group relative flex flex-col justify-between bg-card hover:bg-card/90 border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-200"
                 >
                   {/* Product Image & Badges */}
                   <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
                     <img
                       src={item.image_url}
                       alt={item.name}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-center group-hover:scale-103 transition-transform duration-300"
                       loading="lazy"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
                     {/* Top Badges */}
                     <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
                       <div className="flex flex-wrap gap-1">
                         {item.is_best_seller && (
-                          <span className="bg-amber-500 text-black text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm">
-                            ⭐ MÁS VENDIDO
+                          <span className="bg-amber-500 text-slate-950 text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-current" aria-hidden="true" />
+                            <span>MÁS VENDIDO</span>
                           </span>
                         )}
                         {item.original_price && (
-                          <span className="bg-red-600 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm">
+                          <span className="bg-rose-600 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded shadow-xs">
                             PROMO
                           </span>
                         )}
@@ -229,11 +233,11 @@ const Menu: React.FC = () => {
                     <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                       <div>
                         {item.original_price && (
-                          <span className="text-xs text-white/70 line-through mr-2 font-medium">
+                          <span className="text-xs text-white/70 line-through mr-2 font-medium tabular-nums">
                             {venue.currency} {item.original_price}
                           </span>
                         )}
-                        <span className="text-xl font-black text-amber-400 drop-shadow-md">
+                        <span className="text-lg font-black text-amber-400 drop-shadow-xs tabular-nums">
                           {venue.currency} {item.price}
                         </span>
                       </div>
@@ -241,11 +245,12 @@ const Menu: React.FC = () => {
                       {/* Review Star Button */}
                       <button
                         onClick={() => setSelectedReviewItem(item)}
-                        className="bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 transition-all hover:scale-105"
+                        aria-label={`Ver opiniones de ${item.name}`}
+                        className="bg-black/60 hover:bg-black/80 backdrop-blur-xs text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1 border border-white/20 transition-all"
                       >
-                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                        <span>{item.average_rating || 5.0}</span>
-                        <span className="text-[10px] text-white/70">({item.reviews_count})</span>
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" aria-hidden="true" />
+                        <span className="tabular-nums">{item.average_rating || 5.0}</span>
+                        <span className="text-[10px] text-white/70 tabular-nums">({item.reviews_count})</span>
                       </button>
                     </div>
                   </div>
@@ -253,11 +258,11 @@ const Menu: React.FC = () => {
                   {/* Card Body */}
                   <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                     <div className="space-y-1.5">
-                      <h3 className="font-bold text-base text-foreground leading-snug group-hover:text-primary transition-colors">
+                      <h3 className="font-bold text-sm sm:text-base text-foreground leading-snug group-hover:text-amber-500 transition-colors">
                         {item.name}
                       </h3>
                       <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {item.description || 'Delicioso plato preparado al momento con los mejores ingredientes.'}
+                        {item.description || 'Preparado al momento con ingredientes seleccionados.'}
                       </p>
 
                       {/* Tags & Dietary Badges */}
@@ -266,25 +271,27 @@ const Menu: React.FC = () => {
                           {item.dietary?.map((diet, idx) => (
                             <span
                               key={`diet-${idx}`}
-                              className="text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md"
+                              className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1"
                             >
-                              🌱 {diet}
+                              <Leaf className="w-2.5 h-2.5" aria-hidden="true" />
+                              <span>{diet}</span>
                             </span>
                           ))}
                           {item.tags?.map((tag, idx) => (
                             <span
                               key={`tag-${idx}`}
-                              className="text-[10px] bg-secondary/40 text-muted-foreground px-2 py-0.5 rounded-md"
+                              className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md"
                             >
                               {tag}
                             </span>
                           ))}
                           {item.allergens && item.allergens.length > 0 && (
                             <span
-                              className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20"
+                              className="text-[9px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20 flex items-center gap-1"
                               title={`Contiene: ${item.allergens.join(', ')}`}
                             >
-                              ⚠️ Alérgenos: {item.allergens.slice(0, 2).join(', ')}{item.allergens.length > 2 ? '...' : ''}
+                              <AlertCircle className="w-2.5 h-2.5" aria-hidden="true" />
+                              <span>Alérgenos: {item.allergens.slice(0, 2).join(', ')}{item.allergens.length > 2 ? '...' : ''}</span>
                             </span>
                           )}
                         </div>
@@ -292,7 +299,7 @@ const Menu: React.FC = () => {
                     </div>
 
                     {/* Hotness Thermometer Bar */}
-                    <div className="pt-2 border-t border-border/40">
+                    <div className="pt-2 border-t border-border">
                       <HotnessIndicator
                         score={item.hotness_score}
                         velocity24h={item.velocity_24h}
@@ -301,36 +308,38 @@ const Menu: React.FC = () => {
                     </div>
 
                     {/* Add to Cart Actions */}
-                    <div className="pt-2">
+                    <div className="pt-1">
                       {qtyInCart === 0 ? (
                         <Button
                           onClick={() => handleAddToCart(item)}
-                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 h-10 rounded-xl"
+                          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
                         >
-                          <Plus className="w-4 h-4 stroke-[3]" />
-                          <span>Agregar al Pedido</span>
+                          <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                          <span>Agregar a la Comanda</span>
                         </Button>
                       ) : (
-                        <div className="flex items-center justify-between bg-primary/10 border border-primary/30 rounded-xl p-1">
+                        <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 rounded-xl p-1">
                           <button
                             onClick={() => removeItem(item.id)}
-                            className="w-8 h-8 rounded-lg bg-background hover:bg-muted text-foreground flex items-center justify-center transition-all shadow-xs"
+                            aria-label={`Quitar uno de ${item.name}`}
+                            className="w-7 h-7 rounded-lg bg-background hover:bg-muted text-foreground flex items-center justify-center transition-all shadow-xs"
                           >
-                            <Minus className="w-4 h-4" />
+                            <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                           </button>
                           <div className="flex flex-col items-center">
-                            <span className="text-xs font-black text-primary">
-                              {qtyInCart} en el carrito
+                            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+                              {qtyInCart} en comanda
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-bold">
+                            <span className="text-[10px] text-muted-foreground font-medium tabular-nums">
                               {venue.currency} {item.price * qtyInCart}
                             </span>
                           </div>
                           <button
                             onClick={() => handleAddToCart(item)}
-                            className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center transition-all shadow-xs hover:scale-105"
+                            aria-label={`Agregar uno más de ${item.name}`}
+                            className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center transition-all shadow-xs hover:bg-amber-600"
                           >
-                            <Plus className="w-4 h-4 stroke-[3]" />
+                            <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                           </button>
                         </div>
                       )}
@@ -348,23 +357,24 @@ const Menu: React.FC = () => {
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-md mx-auto">
           <button
             onClick={() => setIsCartDrawerOpen(true)}
-            className="w-full bg-gradient-to-r from-amber-500 via-red-600 to-amber-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-white/20 hover:scale-[1.02] transition-transform animate-in slide-in-from-bottom"
+            aria-label="Ver pedido y confirmar"
+            className="w-full bg-slate-900 text-white p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-slate-800 hover:bg-slate-850 active:scale-98 transition-transform"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black/30 flex items-center justify-center font-black text-sm">
+              <div className="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-xs tabular-nums">
                 {getTotalItems()}
               </div>
               <div className="text-left">
-                <p className="text-xs font-bold uppercase tracking-wider text-amber-200">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                   {fulfillmentType === 'dine_in' ? `Mesa ${selectedTable || '1'}` : 'Retiro en Barra'}
                 </p>
-                <p className="text-sm font-black">Ver Pedido & Confirmar</p>
+                <p className="text-xs font-bold text-white">Ver Comanda & Pedir</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 font-black text-base">
+            <div className="flex items-center gap-1.5 font-bold text-sm text-amber-400 tabular-nums">
               <span>{venue.currency} {getTotalPrice()}</span>
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4 text-white" aria-hidden="true" />
             </div>
           </button>
         </div>

@@ -14,7 +14,7 @@ export const DEFAULT_VENUE: Venue = {
   id: "venue-moes-taberna-scz",
   slug: "moes",
   name: "Moe's Taberna",
-  tagline: "La Taberna Más Prendida de Santa Cruz 🍺🔥",
+  tagline: "La Taberna Más Prendida de Santa Cruz",
   description: "Salchipapas legendarias con queso derretido, nachos monstruosos, fernet bien cruceño, chopp helado escarchado y el mejor ambiente nocturno de Santa Cruz de la Sierra.",
   city: "Santa Cruz de la Sierra",
   address: "Av. San Martín #450, Barrio Equipetrol, Santa Cruz, Bolivia",
@@ -313,7 +313,7 @@ export const INITIAL_CATEGORIES: MenuCategoryDetail[] = [
         id: "item-flaming-moe",
         venue_id: "venue-moes-taberna-scz",
         category_id: "cat-tragos",
-        name: "Shot Flaming Moe (En Llamas 🔥)",
+        name: "Shot Flaming Moe (Flambeado en Barra)",
         description: "El mítico shot de la taberna: licor de zarzamora, ron overproof y licor de hierbas encendido en fuego en barra frente a ti.",
         price: 20,
         image_url: "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=800&q=80",
@@ -501,7 +501,7 @@ export const INITIAL_CYCLING_OFFERS: CyclingOffer[] = [
   {
     id: "offer-combo-previa",
     venue_id: "venue-moes-taberna-scz",
-    title: "🔥 COMBO PREVIA AMIGOS: Balde 5 Paceñas + Nachos Supremos",
+    title: "COMBO PREVIA AMIGOS: Balde 5 Paceñas + Nachos Supremos",
     subtitle: "El combo perfecto para arrancar la noche en grupo",
     description: "Balde de 5 Paceñas 620ml en hielo frappé + Nachos Supremos Moe's con extra cheddar y guacamole.",
     badge: "PREVIA AMIGOS -12%",
@@ -633,14 +633,14 @@ export function calculateHotnessScore(velocity24h: number, baseline14d: number):
 export function getHotnessLabel(score: HotnessLevel): { label: string; badge: string; color: string; flameCount: number } {
   switch (score) {
     case 5:
-      return { label: "¡En Llamas!", badge: "🔥🔥🔥 TOP 1", color: "text-red-500 bg-red-500/10 border-red-500/30", flameCount: 3 };
+      return { label: "¡En Llamas!", badge: "TOP 1 • ALTA DEMANDA", color: "text-rose-500 bg-rose-500/10 border-rose-500/30", flameCount: 3 };
     case 4:
-      return { label: "Muy Caliente", badge: "🔥 MUY PEDIDO", color: "text-orange-500 bg-orange-500/10 border-orange-500/30", flameCount: 2 };
+      return { label: "Muy Caliente", badge: "MUY PEDIDO", color: "text-amber-500 bg-amber-500/10 border-amber-500/30", flameCount: 2 };
     case 3:
-      return { label: "Popular", badge: "⚡ TENDENCIA", color: "text-amber-500 bg-amber-500/10 border-amber-500/30", flameCount: 1 };
+      return { label: "Popular", badge: "TENDENCIA", color: "text-amber-500 bg-amber-500/10 border-amber-500/30", flameCount: 1 };
     case 2:
-      return { label: "Templado", badge: "🌡️ ACTIVO", color: "text-yellow-600 bg-yellow-500/10 border-yellow-500/30", flameCount: 1 };
+      return { label: "Templado", badge: "ACTIVO", color: "text-yellow-600 bg-yellow-500/10 border-yellow-500/30", flameCount: 1 };
     default:
-      return { label: "Normal", badge: "❄️ DISPONIBLE", color: "text-blue-500 bg-blue-500/10 border-blue-500/30", flameCount: 0 };
+      return { label: "Normal", badge: "DISPONIBLE", color: "text-blue-500 bg-blue-500/10 border-blue-500/30", flameCount: 0 };
   }
 }

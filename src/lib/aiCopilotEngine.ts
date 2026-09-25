@@ -122,8 +122,8 @@ export class MimenuAIEngine {
       {
         id: 'ins-1',
         category: 'velocity',
-        title: `🔥 "${topItem?.name}" lidera las ventas en Santa Cruz`,
-        observation: `Tiene una velocidad de ${topItem?.velocity_24h} pedidos/día con un rating promedio de ⭐ ${topItem?.average_rating}. Los clientes valoran la porción abundante y el queso cheddar fundido.`,
+        title: `"${topItem?.name}" lidera las ventas en Santa Cruz`,
+        observation: `Tiene una velocidad de ${topItem?.velocity_24h} pedidos/día con un rating promedio de ${topItem?.average_rating} / 5.0. Los clientes valoran la porción abundante y el queso cheddar fundido.`,
         actionRecommendation: `Combina "${topItem?.name}" en un combo de Smart Offer junto con bebidas de alto margen (Fernet o Chopp) para maximizar el ticket promedio.`,
         confidenceScore: 96,
         generatedAt: new Date().toISOString(),
@@ -131,7 +131,7 @@ export class MimenuAIEngine {
       {
         id: 'ins-2',
         category: 'promotions',
-        title: `⚡ Alto ROI en la oferta "${topOffer?.title || 'Happy Hour'}"`,
+        title: `Alto ROI en la oferta "${topOffer?.title || 'Happy Hour'}"`,
         observation: `Ha generado ${this.venue.currency} ${topOffer?.analytics.revenue_generated || 0} con una tasa de conversión del ${
           topOffer?.analytics.impressions
             ? ((topOffer.analytics.conversions / topOffer.analytics.impressions) * 100).toFixed(1)
@@ -144,7 +144,7 @@ export class MimenuAIEngine {
       {
         id: 'ins-3',
         category: 'timing',
-        title: '🌙 Ventana dorada nocturna: 21:00 a 00:30',
+        title: 'Ventana de alta demanda nocturna: 21:00 a 00:30',
         observation: `El 68% de las ventas de salchipapas y chopp artesanal se concentran en la franja de 21:00 a 00:30 en Equipetrol.`,
         actionRecommendation: `Asegura stock reforzado de papas rústicas y barriles de chopp enfriados con 2 horas de anticipación.`,
         confidenceScore: 89,
@@ -153,7 +153,7 @@ export class MimenuAIEngine {
       {
         id: 'ins-4',
         category: 'reviews',
-        title: '⭐ Palabras clave más elogiadas por clientes',
+        title: 'Palabras clave más elogiadas por clientes',
         observation: `Los clientes destacan principalmente: ${topKeywords.slice(0, 3).join(', ') || 'salsa de ajo, queso cheddar, chopp helado'}.`,
         actionRecommendation: `Destaca estas características como badges o tags visibles en las fotos del menú digital.`,
         confidenceScore: 94,

@@ -199,11 +199,11 @@ export const AdminAIChat: React.FC = () => {
   };
 
   const quickPrompts = [
-    "📊 ¿Cuáles son las métricas de venta y ticket promedio?",
-    "🔥 ¿Qué platos están en llamas según el algoritmo?",
-    "⚡ Crear promo 2x1 en Chopp Artesanal para jueves",
-    "⭐ ¿Qué dicen las reseñas de las salchipapas?",
-    "➕ Agregar nueva Cerveza Artesanal IPA a 28 Bs",
+    "¿Cuáles son las métricas de venta y ticket promedio?",
+    "¿Qué platos tienen mayor rotación según el algoritmo?",
+    "Crear oferta 2x1 en Chopp Artesanal para los jueves",
+    "¿Qué aspectos destacan las reseñas de las salchipapas?",
+    "Agregar Cerveza Artesanal IPA a 28 Bs",
   ];
 
   return (
@@ -457,26 +457,26 @@ export const AdminAIChat: React.FC = () => {
                 <div className="space-y-1.5">
                   <button
                     onClick={() => handleSendMessage("Crear una nueva oferta 2x1 para Happy Hour")}
-                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-bold transition-colors flex items-center justify-between"
+                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-semibold transition-colors flex items-center justify-between"
                   >
-                    <span>⚡ Lanzar Promo Happy Hour</span>
+                    <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" /> Activar Promo Happy Hour</span>
                     <Plus className="w-3 h-3 text-muted-foreground" />
                   </button>
 
                   <button
                     onClick={() => handleSendMessage("Recalcular hotness de todo el menú")}
-                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-bold transition-colors flex items-center justify-between"
+                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-semibold transition-colors flex items-center justify-between"
                   >
-                    <span>🔥 Recalcular Hotness Real</span>
-                    <Flame className="w-3 h-3 text-red-500" />
+                    <span className="flex items-center gap-1.5"><Flame className="w-3.5 h-3.5 text-rose-500" aria-hidden="true" /> Recalcular Rotación Real</span>
+                    <Plus className="w-3 h-3 text-muted-foreground" />
                   </button>
 
                   <button
                     onClick={() => handleSendMessage("Analizar qué opinan los clientes en las reseñas")}
-                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-bold transition-colors flex items-center justify-between"
+                    className="w-full text-left p-2 rounded-lg bg-muted/30 hover:bg-muted text-xs font-semibold transition-colors flex items-center justify-between"
                   >
-                    <span>⭐ Analizar Sentimiento de Reseñas</span>
-                    <Star className="w-3 h-3 text-amber-500" />
+                    <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" /> Analizar Opiniones de Reseñas</span>
+                    <Plus className="w-3 h-3 text-muted-foreground" />
                   </button>
                 </div>
               </Card>
@@ -506,8 +506,9 @@ export const AdminAIChat: React.FC = () => {
                   <h3 className="font-bold text-sm text-foreground">{ins.title}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{ins.observation}</p>
 
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-foreground font-medium">
-                    💡 <strong>Acción Sugerida:</strong> {ins.actionRecommendation}
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-foreground font-medium flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
+                    <span><strong>Acción Sugerida:</strong> {ins.actionRecommendation}</span>
                   </div>
                 </Card>
               ))}

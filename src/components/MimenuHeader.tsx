@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShoppingBag, UtensilsCrossed, Sparkles, MapPin, Search, Menu as MenuIcon, X, ShieldAlert, Award } from 'lucide-react';
+import { ShoppingBag, UtensilsCrossed, Sparkles, MapPin, Search, X, ShieldAlert, Flame } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { useCart } from '@/lib/cartContext';
 import { Button } from '@/components/ui/button';
@@ -29,21 +29,22 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-border/70 shadow-xs">
+      <header className="sticky top-0 z-40 w-full bg-background/95 backdrop-blur-md border-b border-border/80 shadow-xs">
         {/* Top Info Bar */}
-        <div className="bg-gradient-to-r from-amber-600 via-red-600 to-amber-600 text-white text-[11px] font-bold py-1 px-4 flex items-center justify-between">
+        <div className="bg-slate-900 text-slate-200 text-[11px] font-medium py-1 px-4 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2 mx-auto sm:mx-0">
-            <span className="flex h-2 w-2 rounded-full bg-yellow-300 animate-pulse" />
-            <span>{venue.name} • {venue.city}</span>
-            <span className="opacity-80 hidden md:inline">| {venue.opening_hours}</span>
+            <span className="flex h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+            <span className="font-semibold text-white">{venue.name}</span>
+            <span className="text-slate-400">• {venue.city}</span>
+            <span className="text-slate-400 hidden md:inline">| {venue.opening_hours}</span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-3">
-            <Link to="/admin/ai" className="hover:underline flex items-center gap-1 opacity-90 hover:opacity-100 font-bold">
-              <Sparkles className="w-3 h-3 text-yellow-300" /> Copiloto AI
+          <div className="hidden sm:flex items-center gap-4 text-slate-300">
+            <Link to="/admin/ai" className="hover:text-white flex items-center gap-1.5 transition-colors font-medium">
+              <Sparkles className="w-3 h-3 text-amber-400" aria-hidden="true" /> Copiloto IA
             </Link>
-            <Link to="/admin" className="hover:underline flex items-center gap-1 opacity-90 hover:opacity-100">
-              <ShieldAlert className="w-3 h-3" /> Panel Admin
+            <Link to="/admin" className="hover:text-white flex items-center gap-1.5 transition-colors">
+              <ShieldAlert className="w-3 h-3 text-slate-400" aria-hidden="true" /> Panel Admin
             </Link>
           </div>
         </div>
@@ -51,16 +52,16 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
         {/* Main Navbar */}
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           {/* Logo & Brand */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-white font-black text-xl shadow-md group-hover:scale-105 transition-transform">
-              🍺
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-xs group-hover:scale-105 transition-transform">
+              <Flame className="w-5 h-5 fill-amber-500" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-lg tracking-tight text-foreground group-hover:text-amber-500 transition-colors">
+                <span className="font-bold text-lg tracking-tight text-foreground group-hover:text-amber-500 transition-colors">
                   {venue.name}
                 </span>
-                <span className="text-[10px] font-extrabold uppercase bg-amber-500/15 text-amber-500 px-1.5 py-0.5 rounded border border-amber-500/30">
+                <span className="text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20">
                   SCZ
                 </span>
               </div>
@@ -74,9 +75,10 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setIsTableModalOpen(true)}
-              className="flex items-center gap-2 bg-muted/40 hover:bg-muted/70 border border-border px-3 py-1.5 rounded-full text-xs font-bold text-foreground transition-all hover:scale-105 shadow-xs"
+              className="flex items-center gap-2 bg-muted/50 hover:bg-muted border border-border px-3.5 py-1.5 rounded-full text-xs font-semibold text-foreground transition-all hover:border-slate-400 shadow-xs"
+              aria-label="Seleccionar o cambiar mesa"
             >
-              <UtensilsCrossed className="w-3.5 h-3.5 text-primary" />
+              <UtensilsCrossed className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
               <span>
                 {fulfillmentType === 'dine_in'
                   ? selectedTable
@@ -84,7 +86,7 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
                     : 'Elegir Mesa'
                   : 'Retiro en Barra'}
               </span>
-              <span className="text-[10px] text-primary font-normal underline ml-0.5">
+              <span className="text-[10px] text-muted-foreground font-normal underline ml-0.5">
                 Cambiar
               </span>
             </button>
@@ -93,20 +95,21 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
             <Button
               size="sm"
               onClick={() => setIsCartDrawerOpen(true)}
-              className={`relative font-bold text-xs shadow-md transition-all ${
+              aria-label={`Ver pedido actual: ${totalCartItems} ítems por ${venue.currency} ${totalCartPrice}`}
+              className={`relative font-bold text-xs transition-all ${
                 totalCartItems > 0
-                  ? 'bg-gradient-to-r from-amber-500 to-red-600 hover:from-amber-600 hover:to-red-700 text-white animate-pulse'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-sm'
                   : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
               }`}
             >
-              <ShoppingBag className="w-4 h-4 mr-1.5" />
-              <span>
+              <ShoppingBag className="w-4 h-4 mr-1.5" aria-hidden="true" />
+              <span className="tabular-nums">
                 {totalCartItems > 0
                   ? `${venue.currency} ${totalCartPrice}`
                   : 'Comanda'}
               </span>
               {totalCartItems > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-background shadow-xs">
+                <span className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-background shadow-xs tabular-nums">
                   {totalCartItems}
                 </span>
               )}
@@ -118,20 +121,22 @@ export const MimenuHeader: React.FC<MimenuHeaderProps> = ({
         {showSearch && onSearchChange && (
           <div className="max-w-6xl mx-auto px-4 pb-3">
             <div className="relative">
-              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
               <input
                 type="text"
                 value={searchValue}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Buscar salchipapas, nachos, tragos, chopp helado..."
-                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-muted/30 border border-border focus:outline-hidden focus:border-primary focus:ring-1 focus:ring-primary transition-all text-foreground placeholder:text-muted-foreground"
+                aria-label="Buscar en la carta"
+                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-muted/40 border border-border focus:outline-hidden focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-foreground placeholder:text-muted-foreground"
               />
               {searchValue && (
                 <button
                   onClick={() => onSearchChange('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="Limpiar búsqueda"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
