@@ -129,12 +129,40 @@ const INITIAL_CUSTOMERS: CustomerProfile[] = [
 export const MimenuProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Venue state
   const [venue, setVenue] = useState<Venue>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const venueSlug = urlParams.get('v') || urlParams.get('venue');
+      if (venueSlug) {
+        // Try finding in provisioned data
+        try {
+          // Note: In a real app we'd fetch this from KV, but for local simulation/PWA
+          // we use the provisioned_venues.json as a read-only registry
+          const provisioned = require('@/data/provisioned_venues.json');
+          const matched = provisioned.find((v: any) => v.slug === venueSlug);
+          if (matched) {
+            // Only use provisioned if no local changes exist or if explicitly requested
+            return matched;
+          }
+        } catch (e) {}
+      }
+    }
     const saved = localStorage.getItem(STORAGE_KEYS.VENUE);
     return saved ? JSON.parse(saved) : DEFAULT_VENUE;
   });
 
   // Categories & items state
   const [categories, setCategories] = useState<MenuCategoryDetail[]>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const venueSlug = urlParams.get('v') || urlParams.get('venue');
+      if (venueSlug) {
+        try {
+          const provisioned = require('@/data/provisioned_venues.json');
+          const matched = provisioned.find((v: any) => v.slug === venueSlug);
+          if (matched && matched.categories) return matched.categories;
+        } catch (e) {}
+      }
+    }
     const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
     return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
   });
@@ -147,6 +175,31 @@ export const MimenuProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Tables state
   const [tables, setTables] = useState<VenueTable[]>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const venueSlug = urlParams.get('v') || urlParams.get('venue');
+      if (venueSlug) {
+        try {
+          const provisioned = require('@/data/provisioned_venues.json');
+          const matched = provisioned.find((v: any) => v.slug === venueSlug);
+          if (matched && matched.tables) {
+            // Generate tables array if it's just a count
+            if (typeof matched.tables === 'number') {
+              return Array.from({ length: matched.tables }, (_, idx) => ({
+                id: `tbl-${matched.slug}-${idx+1}`,
+                venue_id: matched.id,
+                table_number: (idx + 1).toString(),
+                label: `Mesa ${idx + 1}`,
+                qr_code_hash: `${matched.slug}-m${idx + 1}`,
+                zone: idx < 6 ? 'Principal' : 'Terraza',
+                is_occupied: false,
+                is_active: true
+              }));
+            }
+          }
+        } catch (e) {}
+      }
+    }
     const saved = localStorage.getItem(STORAGE_KEYS.TABLES);
     return saved ? JSON.parse(saved) : INITIAL_TABLES;
   });
