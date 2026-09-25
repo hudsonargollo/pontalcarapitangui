@@ -3,7 +3,12 @@
   "main": "worker.ts",
   "compatibility_date": "2024-11-06",
   "compatibility_flags": ["nodejs_compat"],
+  "account_id": "cb27e1a67198789eb42d11ab90737652",
   "workers_dev": true,
+  "routes": [
+    { "pattern": "mimenu.clubemkt.digital", "custom_domain": true },
+    { "pattern": "mimenu.clubemkt.online", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
