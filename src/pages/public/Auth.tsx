@@ -40,7 +40,7 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Login — PONTAL Carapitangui";
+    document.title = "Login | MiMenu - Cardápio Digital & SaaS";
   }, []);
 
   const [email, setEmail] = useState("");

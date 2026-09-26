@@ -63,7 +63,7 @@ export const AdminAIChat: React.FC = () => {
   const aiEngine = new MimenuAIEngine(venue, categories, cyclingOffers, reviews, orders);
 
   useEffect(() => {
-    document.title = `AI Copilot & Business Intelligence — ${venue.name} | MIMENU`;
+    document.title = `AI Copilot & Business Intelligence: ${venue.name} | MiMenu`;
     loadLearnedInsights();
     loadKVData();
   }, [venue.name]);

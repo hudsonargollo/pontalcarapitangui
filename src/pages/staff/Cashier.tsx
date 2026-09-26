@@ -109,7 +109,7 @@ const Cashier = () => {
 
   // Set page title
   useEffect(() => {
-    document.title = "Caixa — PONTAL Carapitangui";
+    document.title = "Caixa & KDS | MiMenu";
   }, []);
 
   // Persist waiter filter selection to localStorage

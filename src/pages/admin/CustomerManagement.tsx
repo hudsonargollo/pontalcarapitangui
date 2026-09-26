@@ -129,7 +129,12 @@ const CustomerManagement = () => {
   const getTierBadge = (tier: CustomerProfile['loyalty_tier']) => {
     switch (tier) {
       case 'VIP':
-        return <Badge className="bg-amber-500 text-slate-950 font-bold">★ VIP</Badge>;
+        return (
+          <Badge className="bg-amber-500 text-slate-950 font-bold flex items-center gap-1">
+            <Star className="w-3 h-3 fill-current" />
+            <span>VIP</span>
+          </Badge>
+        );
       case 'Oro':
         return <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30 font-bold">Oro</Badge>;
       case 'Plata':

@@ -39,7 +39,7 @@ const OrderStatus = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
-    document.title = "Status do Pedido — PONTAL Carapitangui";
+    document.title = "Status do Pedido | MiMenu";
   }, []);
 
   useEffect(() => {

@@ -32,7 +32,7 @@ const Payment = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    document.title = "Pagamento — PONTAL Carapitangui";
+    document.title = "Pagamento do Pedido | MiMenu";
   }, []);
   
   const [order, setOrder] = useState<Order | null>(null);

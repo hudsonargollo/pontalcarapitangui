@@ -16,7 +16,11 @@ import {
   LogOut,
   Menu,
   X,
-  ExternalLink
+  ExternalLink,
+  Camera,
+  Users,
+  Store,
+  UtensilsCrossed
 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { toast } from 'sonner';
@@ -38,10 +42,12 @@ const AdminSidebar = () => {
   const menuItems: SidebarItem[] = [
     { label: 'AI Copilot', icon: <Bot className="w-5 h-5 text-amber-400" />, path: '/admin/ai', description: 'Chat & Inteligencia', badge: 'IA' },
     { label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5 text-blue-400" />, path: '/admin', description: 'Resumen & Kpis' },
+    { label: 'Ingestor Carta IA', icon: <Camera className="w-5 h-5 text-amber-400" />, path: '/admin/ingest-menu', description: 'OCR & Auto-Tagging', badge: 'Vision' },
     { label: 'Cocina & KDS', icon: <ChefHat className="w-5 h-5 text-emerald-400" />, path: '/cashier', description: 'Pedidos en vivo' },
     { label: 'Ofertas Inteligentes', icon: <Sparkles className="w-5 h-5 text-yellow-400" />, path: '/admin/offers', description: 'Cycling promos' },
     { label: 'Hotness & Métricas', icon: <Flame className="w-5 h-5 text-red-400" />, path: '/admin/analytics', description: 'Velocidad & Ventas' },
     { label: 'Mesas & QR', icon: <QrCode className="w-5 h-5 text-purple-400" />, path: '/admin/tables', description: 'Table mapping' },
+    { label: 'CRM & Clientes', icon: <Users className="w-5 h-5 text-cyan-400" />, path: '/admin/customers', description: 'Fidelización & VIP' },
     { label: 'Reseñas & Feedback', icon: <MessageSquare className="w-5 h-5 text-pink-400" />, path: '/admin/reviews', description: 'Moderación' },
     { label: 'White-Label & Marca', icon: <Palette className="w-5 h-5 text-indigo-400" />, path: '/admin/branding', description: 'Personalización' },
     { label: 'Configuraciones', icon: <Settings className="w-5 h-5 text-gray-400" />, path: '/admin/settings', description: 'Sistema & Red' },
@@ -68,8 +74,8 @@ const AdminSidebar = () => {
         {/* Logo Section */}
         <div className="p-5 border-b border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-white font-black text-lg shadow-md shrink-0">
-              🍺
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <UtensilsCrossed className="w-5 h-5" />
             </div>
             {isOpen && (
               <div>
@@ -139,9 +145,10 @@ const AdminSidebar = () => {
           )}
           <button
             onClick={() => navigate('/')}
-            className="text-[11px] text-amber-400 hover:underline font-bold"
+            className="text-[11px] text-amber-400 hover:underline font-bold flex items-center gap-1"
           >
-            {isOpen ? 'Landing Page' : '🏠'}
+            <Store className="w-3.5 h-3.5" />
+            {isOpen && <span>Landing Page</span>}
           </button>
         </div>
       </aside>

@@ -11,16 +11,26 @@ import {
   Bell,
   Lock,
   Database,
-  CheckCircle,
+  CheckCircle2,
   RefreshCw,
   Download,
   PlayCircle,
-  Loader2
+  Loader2,
+  Printer,
+  Globe,
+  Bot,
+  ShieldCheck,
+  Server,
+  Layers,
+  UploadCloud,
+  Check
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { printServerClient } from '@/integrations/print-server/client';
+import { useMimenu } from '@/lib/mimenuContext';
 
 const AdminSettings = () => {
+  const { venue, categories, tables, orders, customers, cyclingOffers } = useMimenu();
   const [activeTab, setActiveTab] = useState('general');
   
   // Printer settings state
@@ -31,8 +41,7 @@ const AdminSettings = () => {
   const [printerStatus, setPrinterStatus] = useState<any>(null);
 
   useEffect(() => {
-    document.title = 'Configurações — PONTAL Carapitangui';
-    // Load saved printer URL
+    document.title = 'Configurações | MiMenu';
     const saved = printServerClient.getServerUrl();
     setServerUrl(saved);
     checkPrinterConnection();
@@ -50,12 +59,10 @@ const AdminSettings = () => {
         toast.success('Servidor de impressão conectado!');
       } else {
         setPrinterStatus(null);
-        toast.error('Servidor de impressão não encontrado');
       }
-    } catch (error) {
+    } catch {
       setIsConnected(false);
       setPrinterStatus(null);
-      toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsChecking(false);
     }
@@ -63,7 +70,7 @@ const AdminSettings = () => {
 
   const handleSavePrinterUrl = () => {
     printServerClient.setServerUrl(serverUrl);
-    toast.success('URL salva com sucesso!');
+    toast.success('URL do servidor de impressão salva');
     checkPrinterConnection();
   };
 
@@ -78,81 +85,128 @@ const AdminSettings = () => {
       });
 
       if (response.ok) {
-        toast.success('Impressão de teste enviada!');
+        toast.success('Impressão de teste enviada com sucesso!');
       } else {
         const error = await response.json();
         toast.error(`Erro: ${error.message || 'Falha na impressão'}`);
       }
-    } catch (error) {
-      toast.error('Erro ao enviar impressão de teste');
+    } catch {
+      toast.error('Erro ao conectar com servidor de impressão local');
     } finally {
       setIsTesting(false);
     }
   };
 
-  const handleReconnect = async () => {
-    try {
-      const response = await fetch(`${serverUrl}/reconnect`, {
-        method: 'POST',
-      });
+  const handleExportJSON = () => {
+    const backupData = {
+      version: '2.0.0',
+      exported_at: new Date().toISOString(),
+      venue,
+      categories,
+      tables,
+      orders,
+      customers,
+      cyclingOffers,
+    };
 
-      if (response.ok) {
-        toast.success('Impressora reconectada!');
-        checkPrinterConnection();
-      } else {
-        toast.error('Erro ao reconectar impressora');
-      }
-    } catch (error) {
-      toast.error('Erro ao reconectar');
-    }
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mimenu_backup_${venue.slug || 'store'}_${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Backup exportado em JSON com sucesso');
   };
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 pb-12">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Settings className="w-8 h-8 text-primary" />
-            Configurações do Sistema
-          </h1>
-          <p className="text-gray-600 mt-2">Gerencie as configurações gerais da aplicação</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                <Settings className="w-4 h-4" />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                Configurações da Plataforma
+              </h1>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Gerencie a conectividade do servidor de impressão, mensageria WhatsApp, isolamento multi-tenant e backups.
+            </p>
+          </div>
+
+          <Button
+            size="sm"
+            onClick={handleExportJSON}
+            variant="outline"
+            className="text-xs font-bold gap-1.5 border-border hover:border-amber-500"
+          >
+            <Download className="w-3.5 h-3.5 text-amber-500" />
+            <span>Exportar Backup JSON</span>
+          </Button>
         </div>
 
         {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 rounded-lg">
-            <TabsTrigger value="general" className="rounded-lg">Geral</TabsTrigger>
-            <TabsTrigger value="printer" className="rounded-lg">Impressora</TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-lg">Notificações</TabsTrigger>
-            <TabsTrigger value="security" className="rounded-lg">Segurança</TabsTrigger>
-            <TabsTrigger value="database" className="rounded-lg">Banco de Dados</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-muted/60 p-1 rounded-xl">
+            <TabsTrigger value="general" className="rounded-lg text-xs font-semibold">Geral & Tenant</TabsTrigger>
+            <TabsTrigger value="printer" className="rounded-lg text-xs font-semibold">Impressão Térmica</TabsTrigger>
+            <TabsTrigger value="notifications" className="rounded-lg text-xs font-semibold">WhatsApp & Copilot</TabsTrigger>
+            <TabsTrigger value="database" className="rounded-lg text-xs font-semibold">KV Storage & Backup</TabsTrigger>
           </TabsList>
 
           {/* General Settings */}
-          <TabsContent value="general" className="space-y-4">
-            <Card className="rounded-xl border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Configurações Gerais</CardTitle>
-                <CardDescription>Informações básicas do sistema</CardDescription>
+          <TabsContent value="general" className="space-y-4 pt-2">
+            <Card className="rounded-2xl border border-border/80 bg-card shadow-xs">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Server className="w-4 h-4 text-amber-500" />
+                  <span>Ambiente & Multi-Tenant KV</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Especificações de execução e integridade da infraestrutura edge.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Versão da Aplicação</p>
-                    <p className="text-lg font-semibold text-gray-900">1.0.0</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="p-3.5 bg-muted/30 border border-border/60 rounded-xl">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Plataforma</p>
+                    <p className="text-sm font-bold text-foreground mt-0.5">MiMenu SaaS</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Ambiente</p>
-                    <p className="text-lg font-semibold text-gray-900">Produção</p>
+                  <div className="p-3.5 bg-muted/30 border border-border/60 rounded-xl">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Versão do Core</p>
+                    <p className="text-sm font-bold text-foreground mt-0.5 tabular-nums">v2.4.0 (Edge)</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Banco de Dados</p>
-                    <p className="text-lg font-semibold text-gray-900">Supabase</p>
+                  <div className="p-3.5 bg-muted/30 border border-border/60 rounded-xl">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Storage Engine</p>
+                    <p className="text-sm font-bold text-foreground mt-0.5">Cloudflare KV</p>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Status</p>
-                    <p className="text-lg font-semibold text-green-600">✓ Online</p>
+                  <div className="p-3.5 bg-muted/30 border border-border/60 rounded-xl">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status do Gateway</p>
+                    <p className="text-sm font-bold text-emerald-500 mt-0.5 flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Online (0ms Cold)</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-muted/20 border border-border/60 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">Loja Atual Conectada:</span>
+                    <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-bold">
+                      {venue.name}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Slug Público:</span>
+                    <span className="font-mono text-xs text-foreground">mimenu.clubemkt.digital/loja/{venue.slug}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Moeda e Localidade:</span>
+                    <span className="font-medium text-foreground">{venue.currency} ({venue.city})</span>
                   </div>
                 </div>
               </CardContent>
@@ -160,32 +214,35 @@ const AdminSettings = () => {
           </TabsContent>
 
           {/* Printer Settings */}
-          <TabsContent value="printer" className="space-y-4">
-            <Card className="rounded-xl border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Configuração de Impressora Térmica</CardTitle>
-                <CardDescription>Gerencie o servidor de impressão para recibos e pedidos</CardDescription>
+          <TabsContent value="printer" className="space-y-4 pt-2">
+            <Card className="rounded-2xl border border-border/80 bg-card shadow-xs">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Printer className="w-4 h-4 text-amber-500" />
+                  <span>Servidor de Impressão Térmica (ESC/POS & PrintNode)</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Integração para disparo automático de comandas de cozinha (KDS) e recibos de mesa via USB/Rede local.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-5">
                 {/* Connection Status */}
-                <div className="p-4 rounded-lg border-2 border-gray-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <div>
-                        <p className="font-semibold text-gray-900">Status do Servidor</p>
-                        <p className="text-sm text-gray-600">Servidor local de impressão térmica</p>
-                      </div>
+                <div className="p-4 rounded-xl border border-border/80 bg-muted/20 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                    <div>
+                      <p className="text-xs font-bold text-foreground">Servidor Local de Impressão</p>
+                      <p className="text-[11px] text-muted-foreground">Driver WebSocket / HTTP ESC/POS</p>
                     </div>
-                    <Badge className={isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                      {isConnected ? '✓ Conectado' : '✗ Desconectado'}
-                    </Badge>
                   </div>
+                  <Badge className={isConnected ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'}>
+                    {isConnected ? 'Conectado' : 'Aguardando Servidor'}
+                  </Badge>
                 </div>
 
-                {/* Server URL Configuration */}
-                <div className="space-y-3">
-                  <Label htmlFor="serverUrl" className="font-semibold">URL do Servidor</Label>
+                {/* Server URL */}
+                <div className="space-y-2">
+                  <Label htmlFor="serverUrl" className="text-xs font-semibold">URL do Servidor Local</Label>
                   <div className="flex gap-2">
                     <Input
                       id="serverUrl"
@@ -193,215 +250,127 @@ const AdminSettings = () => {
                       value={serverUrl}
                       onChange={(e) => setServerUrl(e.target.value)}
                       placeholder="http://localhost:3001"
-                      className="rounded-lg"
+                      className="text-xs h-10 rounded-xl"
                     />
                     <Button
                       onClick={handleSavePrinterUrl}
-                      className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white rounded-lg"
+                      className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold h-10 px-5 rounded-xl shrink-0"
                     >
-                      Salvar
+                      Salvar URL
                     </Button>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Button
                     onClick={checkPrinterConnection}
                     disabled={isChecking}
                     variant="outline"
-                    className="rounded-lg h-12 flex items-center justify-center gap-2"
+                    className="text-xs font-semibold h-10 rounded-xl flex items-center justify-center gap-2"
                   >
-                    {isChecking ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Verificando...
-                      </>
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4" />
-                        Verificar Conexão
-                      </>
-                    )}
+                    {isChecking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                    <span>Testar Conexão</span>
                   </Button>
+                  
                   <Button
                     onClick={handleTestPrint}
-                    disabled={isTesting || !isConnected}
+                    disabled={isTesting}
                     variant="outline"
-                    className="rounded-lg h-12 flex items-center justify-center gap-2"
+                    className="text-xs font-semibold h-10 rounded-xl flex items-center justify-center gap-2"
                   >
-                    {isTesting ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Imprimindo...
-                      </>
-                    ) : (
-                      <>
-                        <PlayCircle className="w-4 h-4" />
-                        Teste de Impressão
-                      </>
-                    )}
+                    {isTesting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <PlayCircle className="w-3.5 h-3.5" />}
+                    <span>Imprimir Comanda de Teste</span>
                   </Button>
-                  <Button
-                    onClick={handleReconnect}
-                    disabled={!isConnected}
-                    variant="outline"
-                    className="rounded-lg h-12 flex items-center justify-center gap-2"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Reconectar
-                  </Button>
-                </div>
-
-                {/* Printer Status Info */}
-                {printerStatus && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-semibold text-blue-900 mb-2">Informações da Impressora:</p>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p>Status: {printerStatus.status || 'Desconhecido'}</p>
-                      {printerStatus.model && <p>Modelo: {printerStatus.model}</p>}
-                      {printerStatus.paperStatus && <p>Papel: {printerStatus.paperStatus}</p>}
-                    </div>
-                  </div>
-                )}
-
-                {/* Installation Guide */}
-                <div className="space-y-3 pt-4 border-t">
-                  <p className="font-semibold text-gray-900">Guia de Instalação</p>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p>1. Baixe os arquivos necessários para instalar o servidor de impressão</p>
-                    <p>2. Execute o script de instalação no seu computador</p>
-                    <p>3. Configure a URL do servidor acima</p>
-                    <p>4. Clique em "Verificar Conexão" para confirmar</p>
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-lg"
-                      onClick={() => toast.info('Acesse o repositório GitHub para baixar os arquivos')}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Baixar Arquivos
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
           {/* Notifications Settings */}
-          <TabsContent value="notifications" className="space-y-4">
-            <Card className="rounded-xl border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Configurações de Notificações</CardTitle>
-                <CardDescription>Gerencie as notificações do sistema</CardDescription>
+          <TabsContent value="notifications" className="space-y-4 pt-2">
+            <Card className="rounded-2xl border border-border/80 bg-card shadow-xs">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-emerald-500" />
+                  <span>WhatsApp Copilot & Webhooks de Notificação</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Automação de comandas, confirmação de Pix e comando de voz/texto.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="p-4 bg-muted/20 border border-border/60 rounded-xl flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Bell className="w-5 h-5 text-primary" />
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <Bell className="w-4 h-4" />
+                      </div>
                       <div>
-                        <p className="font-semibold text-gray-900">Notificações WhatsApp</p>
-                        <p className="text-sm text-gray-600">Enviar notificações via WhatsApp</p>
+                        <p className="text-xs font-bold text-foreground">Disparo Automático de Status</p>
+                        <p className="text-[10px] text-muted-foreground">Envia mensagem quando o pedido for aceito, preparado ou sair para entrega</p>
                       </div>
                     </div>
-                    <div className="w-12 h-6 bg-green-500 rounded-full relative">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-                    </div>
+                    <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">Ativo</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                  <div className="p-4 bg-muted/20 border border-border/60 rounded-xl flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Bell className="w-5 h-5 text-primary" />
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                        <Bot className="w-4 h-4" />
+                      </div>
                       <div>
-                        <p className="font-semibold text-gray-900">Notificações de Pedidos</p>
-                        <p className="text-sm text-gray-600">Alertas de novos pedidos</p>
+                        <p className="text-xs font-bold text-foreground">Copiloto IA para Gerência</p>
+                        <p className="text-[10px] text-muted-foreground">Permite pausar itens, alterar preços e consultar vendas pelo WhatsApp</p>
                       </div>
                     </div>
-                    <div className="w-12 h-6 bg-green-500 rounded-full relative">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-                    </div>
+                    <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">Ativo</Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Security Settings */}
-          <TabsContent value="security" className="space-y-4">
-            <Card className="rounded-xl border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Configurações de Segurança</CardTitle>
-                <CardDescription>Gerencie a segurança da aplicação</CardDescription>
+          {/* Database & Backup Settings */}
+          <TabsContent value="database" className="space-y-4 pt-2">
+            <Card className="rounded-2xl border border-border/80 bg-card shadow-xs">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <Database className="w-4 h-4 text-purple-500" />
+                  <span>Estado KV Storage & Snapshot Atômico</span>
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Exportação de dados de cardápio, mesas, pedidos e CRM para backup completo.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Lock className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold text-blue-900">Autenticação Segura</p>
-                        <p className="text-sm text-blue-800 mt-1">
-                          A aplicação utiliza autenticação segura via Supabase com criptografia de ponta a ponta.
-                        </p>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 bg-muted/30 border border-border/60 rounded-xl text-center">
+                    <p className="text-[10px] text-muted-foreground">Categorias</p>
+                    <p className="text-lg font-bold text-foreground mt-0.5 tabular-nums">{categories.length}</p>
                   </div>
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold text-green-900">Controle de Acesso</p>
-                        <p className="text-sm text-green-800 mt-1">
-                          Sistema de roles e permissões implementado para proteger dados sensíveis.
-                        </p>
-                      </div>
-                    </div>
+                  <div className="p-3 bg-muted/30 border border-border/60 rounded-xl text-center">
+                    <p className="text-[10px] text-muted-foreground">Platos</p>
+                    <p className="text-lg font-bold text-amber-500 mt-0.5 tabular-nums">{categories.flatMap(c => c.items).length}</p>
+                  </div>
+                  <div className="p-3 bg-muted/30 border border-border/60 rounded-xl text-center">
+                    <p className="text-[10px] text-muted-foreground">Mesas QR</p>
+                    <p className="text-lg font-bold text-blue-500 mt-0.5 tabular-nums">{tables.length}</p>
+                  </div>
+                  <div className="p-3 bg-muted/30 border border-border/60 rounded-xl text-center">
+                    <p className="text-[10px] text-muted-foreground">Clientes CRM</p>
+                    <p className="text-lg font-bold text-emerald-500 mt-0.5 tabular-nums">{customers.length}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          {/* Database Settings */}
-          <TabsContent value="database" className="space-y-4">
-            <Card className="rounded-xl border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Banco de Dados</CardTitle>
-                <CardDescription>Informações e configurações do banco de dados</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Database className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold text-green-900">Banco de Dados Seguro</p>
-                        <p className="text-sm text-green-800 mt-1">
-                          Todos os dados são armazenados com segurança no Supabase com backups automáticos diários.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Provedor</p>
-                      <p className="text-lg font-semibold text-gray-900">Supabase (PostgreSQL)</p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Replicação</p>
-                      <p className="text-lg font-semibold text-gray-900">Automática</p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Backups</p>
-                      <p className="text-lg font-semibold text-gray-900">Diários</p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-sm text-gray-600 mb-1">Criptografia</p>
-                      <p className="text-lg font-semibold text-gray-900">SSL/TLS</p>
-                    </div>
-                  </div>
+                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={handleExportJSON}
+                    className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold h-10 px-5 rounded-xl flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Baixar Snapshot JSON Completo</span>
+                  </Button>
                 </div>
               </CardContent>
             </Card>

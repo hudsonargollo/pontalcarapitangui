@@ -300,7 +300,7 @@ const LandingMenu = () => {
   const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
-    document.title = "Cardápio — PONTAL Carapitangui";
+    document.title = "Cardápio Digital | MiMenu";
     loadMenu();
   }, []);
 

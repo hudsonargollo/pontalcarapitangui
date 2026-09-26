@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   ExternalLink,
   MessageSquare,
-  Camera
+  Camera,
+  UtensilsCrossed
 } from 'lucide-react';
 import { useMimenu } from '@/lib/mimenuContext';
 import { HotnessIndicator } from '@/components/HotnessIndicator';
@@ -27,7 +28,7 @@ const AdminDashboard: React.FC = () => {
   const [isPhotoIngesterOpen, setIsPhotoIngesterOpen] = React.useState(false);
 
   useEffect(() => {
-    document.title = `Command Center — ${venue.name} | MIMENU`;
+    document.title = `Command Center: ${venue.name} | MiMenu`;
   }, [venue.name]);
 
   const allItems = categories.flatMap(c => c.items);
@@ -46,9 +47,11 @@ const AdminDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xl">🍺</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+              <UtensilsCrossed className="w-4 h-4" />
+            </div>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-              Command Center — {venue.name}
+              Command Center: {venue.name}
             </h1>
             <span className="text-xs bg-amber-500/15 text-amber-500 font-bold px-2 py-0.5 rounded border border-amber-500/30">
               Santa Cruz de la Sierra

@@ -13,7 +13,7 @@ const Waiter = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    document.title = "Garçom — PONTAL Carapitangui";
+    document.title = "Acesso Garçom | MiMenu";
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {

@@ -420,10 +420,10 @@ export const Onboarding: React.FC = () => {
                     aria-label="Moneda Principal"
                     className="w-full h-10 px-3 rounded-lg border border-input bg-background text-xs font-medium focus:outline-hidden focus:ring-1 focus:ring-amber-500"
                   >
-                    <option value="Bs.">Bs. — Bolivianos (BOB)</option>
-                    <option value="USD $">USD $ — Dólares Americanos</option>
-                    <option value="R$">R$ — Reais Brasileiros (BRL)</option>
-                    <option value="€">€ — Euros (EUR)</option>
+                    <option value="Bs.">Bs. (BOB) Bolivianos</option>
+                    <option value="USD $">USD $ (USD) Dólares Americanos</option>
+                    <option value="R$">R$ (BRL) Reais Brasileiros</option>
+                    <option value="€">€ (EUR) Euros</option>
                   </select>
                 </div>
               </div>

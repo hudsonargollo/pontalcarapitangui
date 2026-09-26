@@ -4,7 +4,7 @@ import AdminDashboard from "./AdminDashboard";
 
 const Admin = () => {
   useEffect(() => {
-    document.title = "Admin Dashboard — PONTAL Carapitangui";
+    document.title = "Admin Dashboard | MiMenu - Cardápio Digital & SaaS";
   }, []);
 
   return (

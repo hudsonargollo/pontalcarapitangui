@@ -19,7 +19,7 @@ import heroSign from "/hero-sign.jpg";
 
 const Proposta = () => {
   useEffect(() => {
-    document.title = "Proposta de Parceria — PONTAL Carapitangui";
+    document.title = "Proposta de Parceria | MiMenu";
   }, []);
 
   return (
