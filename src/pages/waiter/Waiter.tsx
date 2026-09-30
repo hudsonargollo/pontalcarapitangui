@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserCheck, ArrowLeft } from "lucide-react";
-import logo from "@/assets/coco-loko-logo.png";
+import { UserCheck, ArrowLeft, Flame } from "lucide-react";
 
 const Waiter = () => {
   const navigate = useNavigate();
@@ -37,14 +36,14 @@ const Waiter = () => {
         </Button>
 
         {/* Logo */}
-        <div className="text-center mb-8">
-          <img 
-            src={logo} 
-            alt="Pontal Carapitangui Açaiteria" 
-            className="h-24 mx-auto mb-4"
-          />
+        <div className="text-center mb-8 flex flex-col items-center">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 p-[2px] shadow-lg shadow-amber-500/20 mb-4">
+            <div className="w-full h-full bg-[#0D0E15] rounded-[14px] flex items-center justify-center">
+              <Flame className="w-8 h-8 text-amber-400 fill-amber-400" aria-hidden="true" />
+            </div>
+          </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <UserCheck className="h-8 w-8 text-green-600" />
+            <UserCheck className="h-7 w-7 text-green-600" />
             <h1 className="text-3xl font-display uppercase tracking-wider text-purple-900">Garçom</h1>
           </div>
           <p className="text-muted-foreground font-body">
